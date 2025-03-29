@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Neutrals - Keeping these for base readability */
+    --background: 0 0% 100%; /* White */
+    --foreground: 222.2 84% 4.9%; /* Dark Gray */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96.1%; /* Light Gray */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Mid Gray */
+    --border: 214.3 31.8% 91.4%; /* Light Gray */
+    --input: 214.3 31.8% 91.4%; /* Light Gray */
+    --radius: 0.5rem;
+
+    /* Warm Palette */
+    --primary: 30 91% 58%; /* Orange: #F5A431 */
+    --primary-foreground: 210 40% 5%; /* Dark color for contrast on orange */
+    --secondary: 47 97% 43%; /* Yellow: #D9A404 */
+    --secondary-foreground: 210 40% 5%; /* Dark color for contrast on yellow */
+    --accent: 307 24% 43%; /* Purple: #885482 */
+    --accent-foreground: 210 40% 98%; /* Light color for contrast on purple */
+    --destructive: 0 89% 40%; /* Red: #BF0A0A */
+    --destructive-foreground: 210 40% 98%; /* Light color for contrast on red */
+    --ring: 30 91% 58%; /* Orange for focus rings */
+  }
+
+  .dark {
+    /* Define dark theme colors if needed later, using the palette */
+    /* Example: */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+
+    /* Warm Palette - Dark Mode Adjustments (Example) */
+    --primary: 30 91% 58%; /* Orange */
+    --primary-foreground: 210 40% 5%;
+    --secondary: 47 97% 43%; /* Yellow */
+    --secondary-foreground: 210 40% 5%;
+    --accent: 307 24% 55%; /* Lighter Purple for dark mode */
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 89% 50%; /* Lighter Red for dark mode */
+    --destructive-foreground: 210 40% 98%;
+    --ring: 30 91% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: sans-serif; /* Example: Set a default font */
+  }
+}
+
+/* Add custom component layer styles if needed */
+@layer components {
+  /* Example: Style links globally */
+  /* a {
+    @apply text-primary hover:text-primary/80;
+  } */
+}
