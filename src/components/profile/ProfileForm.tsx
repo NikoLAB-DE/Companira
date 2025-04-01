@@ -17,11 +17,11 @@ import { useProfile } from '../../contexts/ProfileContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
-// Updated Zod schema
+// Updated Zod schema (email is still here for form validation, but won't be saved to DB)
 const profileSchema = z.object({
   // Basic Identity
   nickname: z.string().min(1, 'Nickname is required'),
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Invalid email address'), // Keep for display/validation
   telegram_handle: z.string().optional().or(z.literal('')),
   language: z.enum(['EN', 'DE', 'UK']),
 
@@ -29,9 +29,10 @@ const profileSchema = z.object({
   current_situation: z.string().optional().or(z.literal('')),
   focused_problem: z.string().optional().or(z.literal('')),
   top_goals: z.array(z.string()).optional(),
-  other_goal: z.string().optional().or(z.literal('')), // Added other_goal
+  other_goal: z.string().optional().or(z.literal('')),
 
   // Assistant Setup
+  assistant_name: z.string().optional().or(z.literal('')),
   persona: z.string().optional().or(z.literal('')),
   tone: z.string().optional().or(z.literal('')),
   gender: z.enum(['male', 'female']).optional(),
@@ -43,13 +44,13 @@ const profileSchema = z.object({
   reminder_type: z.string().optional().or(z.literal('')),
   reminder_frequency: z.string().optional().or(z.literal('')),
   reminder_channel: z.string().optional().or(z.literal('')),
-  reminder_time: z.string().optional().or(z.literal('')), // Keep as string for time input
+  reminder_time: z.string().optional().or(z.literal('')),
 
   // Additional
   avoid_topics: z.array(z.string()).optional(),
-  other_avoid_topic: z.string().optional().or(z.literal('')), // Added other_avoid_topic
+  other_avoid_topic: z.string().optional().or(z.literal('')),
   preferred_response_style: z.string().optional().or(z.literal('')),
-  emoji_preference: z.enum(['none', 'less', 'more']).optional(), // Added emoji_preference
+  emoji_preference: z.enum(['none', 'less', 'more']).optional(),
 });
 
 // Define dropdown options (keep existing ones)
@@ -82,24 +83,26 @@ const contentStyleOptions = [
 
 
 const ProfileForm: React.FC = () => {
-  const { profile, loading, error, saveProfile } = useProfile();
+  // Use the new function for saving to Supabase
+  const { profile, loading, error, saveProfileToSupabase } = useProfile();
   const { user } = useAuth();
 
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<Profile>({
     resolver: zodResolver(profileSchema),
-    // Updated default values
+    // Default values remain the same
     defaultValues: {
       nickname: '',
-      email: '',
+      email: '', // Will be populated from user/profile context
       language: 'EN',
       gender: undefined,
+      assistant_name: '',
       response_length: 'medium',
       reminders_enabled: false,
       top_goals: [],
-      other_goal: '', // Added
+      other_goal: '',
       avoid_topics: [],
-      other_avoid_topic: '', // Added
-      emoji_preference: 'less', // Default emoji preference
+      other_avoid_topic: '',
+      emoji_preference: 'less',
       persona: '',
       tone: '',
       content_style: '',
@@ -114,20 +117,21 @@ const ProfileForm: React.FC = () => {
     },
   });
 
-  // Updated effect to reset form with profile data and user email
+  // Effect to reset form with profile data (including email from context/user)
   useEffect(() => {
     const defaultValues = {
-      nickname: profile?.nickname || '',
-      email: user?.email || '',
+      nickname: profile?.nickname || user?.nickname || '', // Fallback to user nickname if profile nickname is empty
+      email: profile?.email || user?.email || '', // Use email from profile context (which gets it from user)
       language: profile?.language || 'EN',
       gender: profile?.gender === 'male' || profile?.gender === 'female' ? profile.gender : undefined,
+      assistant_name: profile?.assistant_name || '',
       response_length: profile?.response_length || 'medium',
       reminders_enabled: profile?.reminders_enabled || false,
       top_goals: profile?.top_goals || [],
-      other_goal: profile?.other_goal || '', // Added
+      other_goal: profile?.other_goal || '',
       avoid_topics: profile?.avoid_topics || [],
-      other_avoid_topic: profile?.other_avoid_topic || '', // Added
-      emoji_preference: profile?.emoji_preference || 'less', // Added
+      other_avoid_topic: profile?.other_avoid_topic || '',
+      emoji_preference: profile?.emoji_preference || 'less',
       persona: profile?.persona || '',
       tone: profile?.tone || '',
       content_style: profile?.content_style || '',
@@ -149,16 +153,32 @@ const ProfileForm: React.FC = () => {
   const selectedTone = watch('tone');
   const selectedContentStyle = watch('content_style');
   const selectedGender = watch('gender');
-  const selectedEmojiPreference = watch('emoji_preference'); // Watch emoji preference
+  const selectedEmojiPreference = watch('emoji_preference');
 
   const onSubmit = async (data: Profile) => {
-    const dataToSave = { ...data, email: user?.email || '', user_id: user?.id || '' }; // Ensure user_id is included
-    if (dataToSave.gender !== 'male' && dataToSave.gender !== 'female') {
+    if (!user) {
+      console.error("User not logged in, cannot save profile.");
+      return; // Should not happen if form is protected, but good practice
+    }
+
+    // Prepare data for saving: exclude email, ensure user_id
+    // The 'email' field from the form 'data' is automatically excluded
+    // because saveProfileToSupabase expects Omit<Profile, 'email'>
+    const dataToSave = {
+      ...data,
+      user_id: user.id, // Ensure user_id is set
+    };
+
+    // Remove email explicitly just to be absolutely sure, though type checking helps
+    delete (dataToSave as any).email;
+
+    // Ensure gender is valid before saving
+    if (dataToSave.gender !== 'male' && dataToSave.gender !== 'female') { // Fixed: &amp;&amp; -> &&
         dataToSave.gender = undefined;
     }
-    // Ensure optional fields that are empty strings are saved as null or handled appropriately by backend/db
-    // Supabase upsert should handle this if the column allows nulls.
-    await saveProfile(dataToSave);
+
+    // Call the Supabase save function
+    await saveProfileToSupabase(dataToSave);
   };
 
   const goalOptions = [
@@ -204,7 +224,7 @@ const ProfileForm: React.FC = () => {
                   <p className="text-sm text-red-500">{errors.nickname.message}</p>
                 )}
               </div>
-              {/* Email */}
+              {/* Email (Read Only) */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -391,27 +411,44 @@ const ProfileForm: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              {/* Gender */}
-              <div className="space-y-2">
-                <Label>Assistant Gender</Label>
-                <RadioGroup
-                  value={selectedGender}
-                  onValueChange={(value) => setValue('gender', value as 'male' | 'female')}
-                  className="flex space-x-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="male" id="gender-male" />
-                    <Label htmlFor="gender-male">Male</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="female" id="gender-female" />
-                    <Label htmlFor="gender-female">Female</Label>
-                  </div>
-                </RadioGroup>
-                 {errors.gender && (
-                  <p className="text-sm text-red-500">{errors.gender.message}</p>
-                )}
+
+              {/* Assistant Name and Gender */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {/* Assistant Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="assistant_name">Assistant Name (Optional)</Label>
+                  <Input
+                    id="assistant_name"
+                    {...register('assistant_name')}
+                    placeholder="Give your assistant a name"
+                  />
+                   {errors.assistant_name && (
+                    <p className="text-sm text-red-500">{errors.assistant_name.message}</p>
+                  )}
+                </div>
+                {/* Gender */}
+                <div className="space-y-2">
+                  <Label>Assistant Gender</Label>
+                  <RadioGroup
+                    value={selectedGender}
+                    onValueChange={(value) => setValue('gender', value as 'male' | 'female')}
+                    className="flex space-x-4 pt-2" // Added pt-2 for alignment
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="male" id="gender-male" />
+                      <Label htmlFor="gender-male">Male</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="female" id="gender-female" />
+                      <Label htmlFor="gender-female">Female</Label>
+                    </div>
+                  </RadioGroup>
+                  {errors.gender && (
+                    <p className="text-sm text-red-500">{errors.gender.message}</p>
+                  )}
+                </div>
               </div>
+
               {/* Response Length */}
               <div className="space-y-2">
                 <Label>Response Length</Label>
@@ -615,7 +652,7 @@ const ProfileForm: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 mt-4">{error}</p>}
 
       <div className="flex justify-end mt-6">
         <Button type="submit" disabled={loading}>
@@ -625,7 +662,7 @@ const ProfileForm: React.FC = () => {
               Saving...
             </>
           ) : (
-            'Save Profile'
+            'Save Profile' // Updated button text
           )}
         </Button>
       </div>

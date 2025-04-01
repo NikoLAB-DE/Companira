@@ -4,6 +4,7 @@ import { useChat } from '../contexts/ChatContext';
 import { Button } from '../components/ui/button';
 import { Link } from 'react-router-dom';
 import ChatContainer from '../components/chat/ChatContainer';
+import FAQSection from '../components/faq/FAQSection';
 
 const HomePage: React.FC = () => {
   const { user } = useAuth();
@@ -17,7 +18,7 @@ const HomePage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-md border border-gray-200 h-[70vh] mb-8">
             <div className="bg-blue-50 border-b border-blue-200 p-3 flex justify-between items-center">
               <p className="text-blue-800 font-medium">
-                Welcome back, <span className="font-bold">{user.nickname}</span>! How can I help you today?
+                Welcome back, <span className="font-bold">{user.nickname || user.email}</span>! How can I help you today?
               </p>
               <span className="text-xs text-blue-500">Chat ID: {chatId.substring(0, 8)}</span>
             </div>
@@ -37,22 +38,18 @@ const HomePage: React.FC = () => {
                 Our AI is designed to be empathetic, understanding, and helpful. It adapts to your preferences and needs to provide the best possible experience.
               </p>
             </div>
-          </>
-        )}
 
-        {!user && (
-          <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
               <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
                 <h3 className="text-xl font-semibold mb-3 text-blue-700">Personalized Experience</h3>
                 <p className="text-gray-600">Customize how Companira interacts with you through detailed profile settings.</p>
               </div>
-              
+
               <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
                 <h3 className="text-xl font-semibold mb-3 text-blue-700">Meaningful Conversations</h3>
                 <p className="text-gray-600">Engage in deep, thoughtful discussions about topics that matter to you.</p>
               </div>
-              
+
               <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
                 <h3 className="text-xl font-semibold mb-3 text-blue-700">Helpful Tools</h3>
                 <p className="text-gray-600">Access a variety of tools designed to assist with your personal growth and well-being.</p>
@@ -72,9 +69,9 @@ const HomePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-8">
+            <div className="border-t border-gray-200 pt-8 mt-12">
               <h2 className="text-2xl font-bold mb-4">Why Choose Companira?</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12"> {/* Added mb-12 */}
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Privacy-Focused</h3>
                   <p className="text-gray-600">Your conversations and data are kept private and secure.</p>
@@ -93,6 +90,9 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* FAQ Section - Moved to the end */}
+            <FAQSection />
           </>
         )}
       </div>

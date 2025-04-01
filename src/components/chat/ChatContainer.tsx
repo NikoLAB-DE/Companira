@@ -3,12 +3,22 @@ import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { useChat } from '../../contexts/ChatContext';
 import { useAuth } from '../../contexts/AuthContext'; // Import useAuth
-import { Loader2 } from 'lucide-react';
+import { Loader2, Info } from 'lucide-react'; // Import Info icon
 import { Switch } from '../ui/switch';
 import { Label } from '../ui/label';
+import { Button } from '../ui/button'; // Import Button
 
 const ChatContainer: React.FC = () => {
-  const { messages, loading, sendMessage, chatId, useTestWebhook, toggleWebhook } = useChat();
+  const {
+    messages,
+    loading,
+    sendMessage,
+    chatId,
+    useTestWebhook,
+    toggleWebhook,
+    lastSentPayload, // Get payload state
+    // clearLastSentPayload // Get clear function (optional for now)
+  } = useChat();
   const { user } = useAuth(); // Get user data from AuthContext
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -38,9 +48,19 @@ const ChatContainer: React.FC = () => {
   const userNickname = user?.nickname || 'User'; // Use nickname from AuthContext user state
   const userInitial = userNickname?.charAt(0).toUpperCase() || 'U';
 
+  // Function to show the last sent payload
+  const handleShowPayload = () => {
+    if (lastSentPayload) {
+      alert(`Last Sent Payload:\n\n${JSON.stringify(lastSentPayload, null, 2)}`);
+    } else {
+      alert('No message payload has been sent yet in this session.');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
-      <div className="border-b p-2 bg-background flex items-center justify-between"> {/* Use bg-background */}
+      <div className="border-b p-2 bg-background flex items-center justify-between space-x-4"> {/* Use bg-background */}
+        {/* Left side: Webhook Toggle */}
         <div className="flex items-center space-x-2">
           <Switch
             id="webhook-toggle"
@@ -51,7 +71,18 @@ const ChatContainer: React.FC = () => {
             {useTestWebhook ? 'Using Test Webhook' : 'Using Production Webhook'}
           </Label>
         </div>
-        {/* Removed Chat ID display */}
+
+        {/* Right side: Show Payload Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleShowPayload}
+          disabled={!lastSentPayload} // Disable if no payload exists
+          title="Show JSON payload of the last sent message"
+        >
+          <Info className="h-4 w-4 mr-1" />
+          Show Last Payload
+        </Button>
       </div>
 
       <div className="flex-grow overflow-y-auto p-4 bg-muted/20"> {/* Use themed background */}
@@ -85,9 +116,8 @@ const ChatContainer: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t p-4 bg-background"> {/* Use bg-background */}
-        <ChatInput onSendMessage={sendMessage} isLoading={loading} />
-      </div>
+      {/* Chat Input - Pass props directly */}
+      <ChatInput />
     </div>
   );
 };

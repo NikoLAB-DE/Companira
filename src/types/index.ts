@@ -1,3 +1,5 @@
+import { type } from "os";
+
 export interface User {
   id: string;
   email?: string;
@@ -26,6 +28,7 @@ export interface Profile {
   other_goal?: string; // New field for custom goal
 
   // Assistant Setup
+  assistant_name?: string; // New field for assistant name
   persona?: string;
   tone?: string;
   gender?: 'male' | 'female'; // Removed 'neutral'
