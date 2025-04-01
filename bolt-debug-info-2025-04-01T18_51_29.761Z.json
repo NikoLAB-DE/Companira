@@ -1,0 +1,792 @@
+{
+  "timestamp": "2025-04-01T18:51:29.758Z",
+  "system": {
+    "os": "Win32",
+    "arch": "x64",
+    "platform": "Win32",
+    "cpus": "16 cores",
+    "memory": {
+      "total": "4 GB",
+      "free": "4 GB",
+      "used": "113 MB",
+      "percentage": 3
+    },
+    "node": "browser",
+    "browser": {
+      "name": "Chrome",
+      "version": "134.0.0.0",
+      "language": "de-DE",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+      "cookiesEnabled": true,
+      "online": true,
+      "platform": "Win32",
+      "cores": 16
+    },
+    "screen": {
+      "width": 1574,
+      "height": 886,
+      "colorDepth": 30,
+      "pixelRatio": 1.9520000219345093
+    },
+    "time": {
+      "timezone": "Europe/Berlin",
+      "offset": -120,
+      "locale": "de-DE"
+    },
+    "performance": {
+      "memory": {
+        "jsHeapSizeLimit": 4294705152,
+        "totalJSHeapSize": 122465619,
+        "usedJSHeapSize": 118244963,
+        "usagePercentage": 96.55359925956036
+      },
+      "timing": {
+        "loadTime": 1757,
+        "domReadyTime": 426,
+        "readyStart": 9,
+        "redirectTime": 0,
+        "appcacheTime": 0,
+        "unloadEventTime": 0,
+        "lookupDomainTime": 0,
+        "connectTime": 0,
+        "requestTime": 400,
+        "initDomTreeTime": 15,
+        "loadEventTime": 0
+      },
+      "navigation": {
+        "type": 0,
+        "redirectCount": 0
+      }
+    },
+    "network": {
+      "downlink": 9.25,
+      "effectiveType": "4g",
+      "rtt": 50,
+      "saveData": false,
+      "type": "unknown"
+    },
+    "battery": {
+      "charging": true,
+      "chargingTime": 0,
+      "dischargingTime": null,
+      "level": 100
+    },
+    "storage": {
+      "quota": 613223809842,
+      "usage": 22234,
+      "persistent": true,
+      "temporary": false
+    }
+  },
+  "webApp": {
+    "name": "bolt",
+    "version": "0.0.7",
+    "description": "An AI Agent",
+    "license": "MIT",
+    "environment": "cloudflare",
+    "gitInfo": {
+      "local": {
+        "commitHash": "332edd3",
+        "branch": "stable",
+        "commitTime": "Tue Mar 11 02:19:39 2025 +0530",
+        "author": "Stijnus",
+        "email": "72551117+Stijnus@users.noreply.github.com",
+        "remoteUrl": "https://github.com/stackblitz-labs/bolt.diy.git",
+        "repoName": "stackblitz-labs/bolt.diy"
+      }
+    },
+    "timestamp": "2025-04-01T18:51:10.808Z",
+    "runtimeInfo": {
+      "nodeVersion": "cloudflare"
+    },
+    "dependencies": {
+      "production": [
+        {
+          "name": "@ai-sdk/amazon-bedrock",
+          "version": "1.0.6",
+          "type": "production"
+        },
+        {
+          "name": "@ai-sdk/anthropic",
+          "version": "0.0.39",
+          "type": "production"
+        },
+        {
+          "name": "@ai-sdk/cohere",
+          "version": "1.0.3",
+          "type": "production"
+        },
+        {
+          "name": "@ai-sdk/deepseek",
+          "version": "0.1.3",
+          "type": "production"
+        },
+        {
+          "name": "@ai-sdk/google",
+          "version": "0.0.52",
+          "type": "production"
+        },
+        {
+          "name": "@ai-sdk/mistral",
+          "version": "0.0.43",
+          "type": "production"
+        },
+        {
+          "name": "@ai-sdk/openai",
+          "version": "1.1.2",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/autocomplete",
+          "version": "6.18.3",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/commands",
+          "version": "6.7.1",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/lang-cpp",
+          "version": "6.0.2",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/lang-css",
+          "version": "6.3.1",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/lang-html",
+          "version": "6.4.9",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/lang-javascript",
+          "version": "6.2.2",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/lang-json",
+          "version": "6.0.1",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/lang-markdown",
+          "version": "6.3.1",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/lang-python",
+          "version": "6.1.6",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/lang-sass",
+          "version": "6.0.2",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/lang-vue",
+          "version": "0.1.3",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/lang-wast",
+          "version": "6.0.2",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/language",
+          "version": "6.10.6",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/search",
+          "version": "6.5.8",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/state",
+          "version": "6.4.1",
+          "type": "production"
+        },
+        {
+          "name": "@codemirror/view",
+          "version": "6.35.0",
+          "type": "production"
+        },
+        {
+          "name": "@headlessui/react",
+          "version": "2.2.0",
+          "type": "production"
+        },
+        {
+          "name": "@iconify-json/svg-spinners",
+          "version": "1.2.1",
+          "type": "production"
+        },
+        {
+          "name": "@lezer/highlight",
+          "version": "1.2.1",
+          "type": "production"
+        },
+        {
+          "name": "@nanostores/react",
+          "version": "0.7.3",
+          "type": "production"
+        },
+        {
+          "name": "@octokit/rest",
+          "version": "21.0.2",
+          "type": "production"
+        },
+        {
+          "name": "@octokit/types",
+          "version": "13.6.2",
+          "type": "production"
+        },
+        {
+          "name": "@openrouter/ai-sdk-provider",
+          "version": "0.0.5",
+          "type": "production"
+        },
+        {
+          "name": "@phosphor-icons/react",
+          "version": "2.1.7",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-collapsible",
+          "version": "1.0.3",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-context-menu",
+          "version": "2.2.2",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-dialog",
+          "version": "1.1.5",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-dropdown-menu",
+          "version": "2.1.6",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-label",
+          "version": "2.1.1",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-popover",
+          "version": "1.1.5",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-progress",
+          "version": "1.0.3",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-scroll-area",
+          "version": "1.2.2",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-separator",
+          "version": "1.1.0",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-switch",
+          "version": "1.1.1",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-tabs",
+          "version": "1.1.2",
+          "type": "production"
+        },
+        {
+          "name": "@radix-ui/react-tooltip",
+          "version": "1.1.4",
+          "type": "production"
+        },
+        {
+          "name": "@remix-run/cloudflare",
+          "version": "2.15.2",
+          "type": "production"
+        },
+        {
+          "name": "@remix-run/cloudflare-pages",
+          "version": "2.15.2",
+          "type": "production"
+        },
+        {
+          "name": "@remix-run/node",
+          "version": "2.15.2",
+          "type": "production"
+        },
+        {
+          "name": "@remix-run/react",
+          "version": "2.15.2",
+          "type": "production"
+        },
+        {
+          "name": "@tanstack/react-virtual",
+          "version": "3.13.0",
+          "type": "production"
+        },
+        {
+          "name": "@types/react-beautiful-dnd",
+          "version": "13.1.8",
+          "type": "production"
+        },
+        {
+          "name": "@uiw/codemirror-theme-vscode",
+          "version": "4.23.6",
+          "type": "production"
+        },
+        {
+          "name": "@unocss/reset",
+          "version": "0.61.9",
+          "type": "production"
+        },
+        {
+          "name": "@webcontainer/api",
+          "version": "1.3.0-internal.10",
+          "type": "production"
+        },
+        {
+          "name": "@xterm/addon-fit",
+          "version": "0.10.0",
+          "type": "production"
+        },
+        {
+          "name": "@xterm/addon-web-links",
+          "version": "0.11.0",
+          "type": "production"
+        },
+        {
+          "name": "@xterm/xterm",
+          "version": "5.5.0",
+          "type": "production"
+        },
+        {
+          "name": "ai",
+          "version": "4.1.2",
+          "type": "production"
+        },
+        {
+          "name": "chalk",
+          "version": "5.4.1",
+          "type": "production"
+        },
+        {
+          "name": "chart.js",
+          "version": "4.4.7",
+          "type": "production"
+        },
+        {
+          "name": "class-variance-authority",
+          "version": "0.7.0",
+          "type": "production"
+        },
+        {
+          "name": "clsx",
+          "version": "2.1.0",
+          "type": "production"
+        },
+        {
+          "name": "date-fns",
+          "version": "3.6.0",
+          "type": "production"
+        },
+        {
+          "name": "diff",
+          "version": "5.2.0",
+          "type": "production"
+        },
+        {
+          "name": "dotenv",
+          "version": "16.4.7",
+          "type": "production"
+        },
+        {
+          "name": "file-saver",
+          "version": "2.0.5",
+          "type": "production"
+        },
+        {
+          "name": "framer-motion",
+          "version": "11.12.0",
+          "type": "production"
+        },
+        {
+          "name": "ignore",
+          "version": "6.0.2",
+          "type": "production"
+        },
+        {
+          "name": "isbot",
+          "version": "4.4.0",
+          "type": "production"
+        },
+        {
+          "name": "isomorphic-git",
+          "version": "1.27.2",
+          "type": "production"
+        },
+        {
+          "name": "istextorbinary",
+          "version": "9.5.0",
+          "type": "production"
+        },
+        {
+          "name": "jose",
+          "version": "5.9.6",
+          "type": "production"
+        },
+        {
+          "name": "js-cookie",
+          "version": "3.0.5",
+          "type": "production"
+        },
+        {
+          "name": "jspdf",
+          "version": "2.5.2",
+          "type": "production"
+        },
+        {
+          "name": "jszip",
+          "version": "3.10.1",
+          "type": "production"
+        },
+        {
+          "name": "nanostores",
+          "version": "0.10.3",
+          "type": "production"
+        },
+        {
+          "name": "ollama-ai-provider",
+          "version": "0.15.2",
+          "type": "production"
+        },
+        {
+          "name": "path-browserify",
+          "version": "1.0.1",
+          "type": "production"
+        },
+        {
+          "name": "react",
+          "version": "18.3.1",
+          "type": "production"
+        },
+        {
+          "name": "react-beautiful-dnd",
+          "version": "13.1.1",
+          "type": "production"
+        },
+        {
+          "name": "react-chartjs-2",
+          "version": "5.3.0",
+          "type": "production"
+        },
+        {
+          "name": "react-dnd",
+          "version": "16.0.1",
+          "type": "production"
+        },
+        {
+          "name": "react-dnd-html5-backend",
+          "version": "16.0.1",
+          "type": "production"
+        },
+        {
+          "name": "react-dom",
+          "version": "18.3.1",
+          "type": "production"
+        },
+        {
+          "name": "react-hotkeys-hook",
+          "version": "4.6.1",
+          "type": "production"
+        },
+        {
+          "name": "react-icons",
+          "version": "5.4.0",
+          "type": "production"
+        },
+        {
+          "name": "react-markdown",
+          "version": "9.0.1",
+          "type": "production"
+        },
+        {
+          "name": "react-resizable-panels",
+          "version": "2.1.7",
+          "type": "production"
+        },
+        {
+          "name": "react-toastify",
+          "version": "10.0.6",
+          "type": "production"
+        },
+        {
+          "name": "rehype-raw",
+          "version": "7.0.0",
+          "type": "production"
+        },
+        {
+          "name": "rehype-sanitize",
+          "version": "6.0.0",
+          "type": "production"
+        },
+        {
+          "name": "remark-gfm",
+          "version": "4.0.0",
+          "type": "production"
+        },
+        {
+          "name": "remix-island",
+          "version": "0.2.0",
+          "type": "production"
+        },
+        {
+          "name": "remix-utils",
+          "version": "7.7.0",
+          "type": "production"
+        },
+        {
+          "name": "rollup-plugin-node-polyfills",
+          "version": "0.2.1",
+          "type": "production"
+        },
+        {
+          "name": "shiki",
+          "version": "1.24.0",
+          "type": "production"
+        },
+        {
+          "name": "tailwind-merge",
+          "version": "2.2.1",
+          "type": "production"
+        },
+        {
+          "name": "unist-util-visit",
+          "version": "5.0.0",
+          "type": "production"
+        },
+        {
+          "name": "zustand",
+          "version": "5.0.3",
+          "type": "production"
+        }
+      ],
+      "development": [
+        {
+          "name": "@blitz/eslint-plugin",
+          "version": "0.1.0",
+          "type": "development"
+        },
+        {
+          "name": "@cloudflare/workers-types",
+          "version": "4.20241127.0",
+          "type": "development"
+        },
+        {
+          "name": "@iconify-json/ph",
+          "version": "1.2.1",
+          "type": "development"
+        },
+        {
+          "name": "@iconify/types",
+          "version": "2.0.0",
+          "type": "development"
+        },
+        {
+          "name": "@remix-run/dev",
+          "version": "2.15.2",
+          "type": "development"
+        },
+        {
+          "name": "@testing-library/jest-dom",
+          "version": "6.6.3",
+          "type": "development"
+        },
+        {
+          "name": "@testing-library/react",
+          "version": "16.2.0",
+          "type": "development"
+        },
+        {
+          "name": "@types/diff",
+          "version": "5.2.3",
+          "type": "development"
+        },
+        {
+          "name": "@types/dom-speech-recognition",
+          "version": "0.0.4",
+          "type": "development"
+        },
+        {
+          "name": "@types/file-saver",
+          "version": "2.0.7",
+          "type": "development"
+        },
+        {
+          "name": "@types/js-cookie",
+          "version": "3.0.6",
+          "type": "development"
+        },
+        {
+          "name": "@types/path-browserify",
+          "version": "1.0.3",
+          "type": "development"
+        },
+        {
+          "name": "@types/react",
+          "version": "18.3.12",
+          "type": "development"
+        },
+        {
+          "name": "@types/react-dom",
+          "version": "18.3.1",
+          "type": "development"
+        },
+        {
+          "name": "@vitejs/plugin-react",
+          "version": "4.3.4",
+          "type": "development"
+        },
+        {
+          "name": "fast-glob",
+          "version": "3.3.2",
+          "type": "development"
+        },
+        {
+          "name": "husky",
+          "version": "9.1.7",
+          "type": "development"
+        },
+        {
+          "name": "is-ci",
+          "version": "3.0.1",
+          "type": "development"
+        },
+        {
+          "name": "jsdom",
+          "version": "26.0.0",
+          "type": "development"
+        },
+        {
+          "name": "node-fetch",
+          "version": "3.3.2",
+          "type": "development"
+        },
+        {
+          "name": "pnpm",
+          "version": "9.14.4",
+          "type": "development"
+        },
+        {
+          "name": "prettier",
+          "version": "3.4.1",
+          "type": "development"
+        },
+        {
+          "name": "sass-embedded",
+          "version": "1.81.0",
+          "type": "development"
+        },
+        {
+          "name": "typescript",
+          "version": "5.7.2",
+          "type": "development"
+        },
+        {
+          "name": "unified",
+          "version": "11.0.5",
+          "type": "development"
+        },
+        {
+          "name": "unocss",
+          "version": "0.61.9",
+          "type": "development"
+        },
+        {
+          "name": "vite",
+          "version": "5.4.11",
+          "type": "development"
+        },
+        {
+          "name": "vite-plugin-node-polyfills",
+          "version": "0.22.0",
+          "type": "development"
+        },
+        {
+          "name": "vite-plugin-optimize-css-modules",
+          "version": "1.1.0",
+          "type": "development"
+        },
+        {
+          "name": "vite-tsconfig-paths",
+          "version": "4.3.2",
+          "type": "development"
+        },
+        {
+          "name": "vitest",
+          "version": "2.1.7",
+          "type": "development"
+        },
+        {
+          "name": "wrangler",
+          "version": "3.91.0",
+          "type": "development"
+        },
+        {
+          "name": "zod",
+          "version": "3.24.1",
+          "type": "development"
+        }
+      ],
+      "peer": [],
+      "optional": []
+    }
+  },
+  "errors": [],
+  "performance": {
+    "memory": {},
+    "timing": {
+      "connectStart": 1743533089848,
+      "secureConnectionStart": 0,
+      "unloadEventEnd": 1743533089998,
+      "domainLookupStart": 1743533089848,
+      "domainLookupEnd": 1743533089848,
+      "responseStart": 1743533089993,
+      "connectEnd": 1743533089848,
+      "responseEnd": 1743533090250,
+      "requestStart": 1743533089850,
+      "domLoading": 1743533090005,
+      "redirectStart": 0,
+      "loadEventEnd": 1743533091596,
+      "domComplete": 1743533091596,
+      "navigationStart": 1743533089839,
+      "loadEventStart": 1743533091596,
+      "domContentLoadedEventEnd": 1743533090265,
+      "unloadEventStart": 1743533089998,
+      "redirectEnd": 0,
+      "domInteractive": 1743533090265,
+      "fetchStart": 1743533089848,
+      "domContentLoadedEventStart": 1743533090265
+    },
+    "navigation": {
+      "type": 0,
+      "redirectCount": 0
+    }
+  }
+}

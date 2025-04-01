@@ -4,26 +4,27 @@ import { faqData } from '@/data/faqData';
 
 const FAQSection: React.FC = () => {
   return (
-    // Use background for better contrast, increased padding
-    <section className="py-16 bg-background rounded-lg" aria-labelledby="faq-heading">
+    // Reduced padding
+    <section className="py-12 bg-background rounded-lg" aria-labelledby="faq-heading"> {/* Reduced py-16 to py-12 */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2
           id="faq-heading"
-          // Use a prominent color, larger text, more bottom margin
-          className="text-3xl font-bold text-center mb-12 text-foreground"
+          // Reduced font size and bottom margin
+          className="text-2xl font-bold text-center mb-8 text-foreground" // Reduced text-3xl to text-2xl, mb-12 to mb-8
         >
           Frequently Asked Questions
         </h2>
 
-        {/* Remove default divide-y, add spacing between items */}
-        <div className="space-y-4">
+        {/* Reduced spacing between items */}
+        <div className="space-y-3"> {/* Reduced space-y-4 to space-y-3 */}
           {faqData.map((item, index) => (
             <FAQItem key={index} item={item} index={index} />
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-muted-foreground">
+        {/* Reduced top margin */}
+        <div className="mt-8 text-center"> {/* Reduced mt-12 to mt-8 */}
+          <p className="text-sm text-muted-foreground"> {/* Added text-sm */}
             Still have questions?{' '}
             <a href="#" className="font-medium text-primary hover:text-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded">
               Contact us

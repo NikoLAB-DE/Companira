@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// Removed framer-motion imports
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type FAQItem as FAQItemType } from '@/data/faqData';
@@ -15,44 +14,42 @@ const FAQItem: React.FC<FAQItemProps> = ({ item, index }) => {
   const contentId = `faq-content-${index}`;
 
   return (
-    // Use card styling for each item, add subtle border
+    // Use card styling, reduced vertical padding
     <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
       <button
-        // Increase padding, add hover/focus states, ensure full width
+        // Reduced padding, ensure full width, maintain focus/hover
         className={cn(
-          "flex justify-between items-center w-full px-6 py-4 text-left focus:outline-none transition-colors duration-150",
-          "hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card" // Added hover/focus
+          "flex justify-between items-center w-full px-4 py-3 text-left focus:outline-none transition-colors duration-150", // Reduced py-4 to py-3, px-6 to px-4
+          "hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card"
         )}
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-controls={contentId}
         id={itemId}
       >
-        {/* Adjust font size/weight, use foreground color */}
-        <h3 className="text-lg font-medium text-foreground">{item.question}</h3>
+        {/* Reduced font size */}
+        <h3 className="text-base font-medium text-foreground">{item.question}</h3> {/* Changed text-lg to text-base */}
         {/* Use primary color for icon, switch icon based on state */}
         {isOpen ? (
-          <ChevronUp className="h-5 w-5 text-primary flex-shrink-0" />
+          <ChevronUp className="h-4 w-4 text-primary flex-shrink-0" /> // Reduced icon size
         ) : (
-          <ChevronDown className="h-5 w-5 text-primary flex-shrink-0" />
+          <ChevronDown className="h-4 w-4 text-primary flex-shrink-0" /> // Reduced icon size
         )}
       </button>
 
-      {/* Removed AnimatePresence and motion.div - Corrected && */}
-      {isOpen && ( // <-- Corrected from &amp;amp;&amp;
+      {isOpen && (
         <div
           id={contentId}
           role="region"
           aria-labelledby={itemId}
-          className="overflow-hidden" // Keep basic styling
+          className="overflow-hidden"
         >
-          {/* Add padding to the answer, use muted foreground color */}
-          <div className="px-6 pb-4 pt-2 text-muted-foreground">
+          {/* Reduced padding, smaller text size */}
+          <div className="px-4 pb-3 pt-1 text-sm text-muted-foreground"> {/* Reduced padding, added text-sm */}
             {item.answer}
           </div>
         </div>
       )}
-      {/* Removed AnimatePresence closing tag */}
     </div>
   );
 };
