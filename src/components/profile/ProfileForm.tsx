@@ -173,7 +173,7 @@ const ProfileForm: React.FC = () => {
     delete (dataToSave as any).email;
 
     // Ensure gender is valid before saving
-    if (dataToSave.gender !== 'male' && dataToSave.gender !== 'female') { // Fixed: &amp;&amp; -> &&
+    if (dataToSave.gender !== 'male' && dataToSave.gender !== 'female') {
         dataToSave.gender = undefined;
     }
 
@@ -194,13 +194,16 @@ const ProfileForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Tabs defaultValue="identity" className="w-full">
-        <TabsList className="grid grid-cols-5 w-full">
-          <TabsTrigger value="identity">Identity</TabsTrigger>
-          <TabsTrigger value="context">Life Context</TabsTrigger>
-          <TabsTrigger value="assistant">Assistant Setup</TabsTrigger>
-          <TabsTrigger value="reminders">Reminders</TabsTrigger>
-          <TabsTrigger value="additional">Additional</TabsTrigger>
-        </TabsList>
+        {/* Modified TabsList to stack vertically on small screens */}
+        <div className="mb-4 overflow-x-auto">
+          <TabsList className="flex flex-wrap w-full">
+            <TabsTrigger value="identity" className="flex-grow min-w-[100px] text-center">Identity</TabsTrigger>
+            <TabsTrigger value="context" className="flex-grow min-w-[100px] text-center">Life Context</TabsTrigger>
+            <TabsTrigger value="assistant" className="flex-grow min-w-[100px] text-center">Assistant Setup</TabsTrigger>
+            <TabsTrigger value="reminders" className="flex-grow min-w-[100px] text-center">Reminders</TabsTrigger>
+            <TabsTrigger value="additional" className="flex-grow min-w-[100px] text-center">Additional</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Basic Identity */}
         <TabsContent value="identity">
