@@ -1,0 +1,58 @@
+[
+  {
+    "id": "1",
+    "title": "Addiction",
+    "children": [
+      {
+        "id": "1.1",
+        "title": "Alcohol",
+        "children": [
+          { "id": "1.1.1", "title": "Diagnosis" },
+          { "id": "1.1.2", "title": "Therapy" }
+        ]
+      },
+      {
+        "id": "1.2",
+        "title": "Drugs",
+        "children": [
+          { "id": "1.2.1", "title": "Therapy" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "title": "Relationships",
+    "children": [
+      {
+        "id": "2.1",
+        "title": "Breakups",
+        "children": []
+      },
+      {
+        "id": "2.2",
+        "title": "Conflict Resolution",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "title": "Mental Health",
+    "children": [
+      {
+        "id": "3.1",
+        "title": "Anxiety",
+        "children": [
+           { "id": "3.1.1", "title": "Symptoms" },
+           { "id": "3.1.2", "title": "Management" }
+        ]
+      },
+      {
+        "id": "3.2",
+        "title": "Depression",
+        "children": []
+      }
+    ]
+  }
+]

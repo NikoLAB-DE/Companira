@@ -1,58 +1,52 @@
+/* Ensure prose styles are available for Markdown rendering */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Neutrals - Keeping these for base readability */
-    --background: 0 0% 100%; /* White */
-    --foreground: 222.2 84% 4.9%; /* Dark Gray */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96.1%; /* Light Gray */
-    --muted-foreground: 215.4 16.3% 46.9%; /* Mid Gray */
-    --border: 214.3 31.8% 91.4%; /* Light Gray */
-    --input: 214.3 31.8% 91.4%; /* Light Gray */
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 25 95% 53%; /* Orange */
+    --primary-foreground: 60 9.1% 97.8%; /* Light text for primary */
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 25 95% 53%; /* Orange for focus rings */
     --radius: 0.5rem;
-
-    /* Warm Palette */
-    --primary: 30 91% 58%; /* Orange: #F5A431 */
-    --primary-foreground: 210 40% 5%; /* Dark color for contrast on orange */
-    --secondary: 47 97% 43%; /* Yellow: #D9A404 */
-    --secondary-foreground: 210 40% 5%; /* Dark color for contrast on yellow */
-    --accent: 307 24% 43%; /* Purple: #885482 */
-    --accent-foreground: 210 40% 98%; /* Light color for contrast on purple */
-    --destructive: 0 89% 40%; /* Red: #BF0A0A */
-    --destructive-foreground: 210 40% 98%; /* Light color for contrast on red */
-    --ring: 30 91% 58%; /* Orange for focus rings */
   }
 
   .dark {
-    /* Define dark theme colors if needed later, using the palette */
-    /* Example: */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-
-    /* Warm Palette - Dark Mode Adjustments (Example) */
-    --primary: 30 91% 58%; /* Orange */
-    --primary-foreground: 210 40% 5%;
-    --secondary: 47 97% 43%; /* Yellow */
-    --secondary-foreground: 210 40% 5%;
-    --accent: 307 24% 55%; /* Lighter Purple for dark mode */
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 89% 50%; /* Lighter Red for dark mode */
-    --destructive-foreground: 210 40% 98%;
-    --ring: 30 91% 58%;
+    --background: 240 10% 3.9%;
+    --foreground: 60 9.1% 97.8%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 60 9.1% 97.8%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 60 9.1% 97.8%;
+    --primary: 25 95% 53%; /* Orange */
+    --primary-foreground: 60 9.1% 97.8%; /* Light text for primary */
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 25 95% 53%; /* Orange for focus rings */
   }
 }
 
@@ -62,14 +56,133 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: sans-serif; /* Example: Set a default font */
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-/* Add custom component layer styles if needed */
+/* Add Tailwind Typography base styles */
+/* We are not importing '@import 'tailwindcss/typography';' because we define custom prose styles below */
+
+/* Custom prose styles (adjust as needed) */
 @layer components {
-  /* Example: Style links globally */
-  /* a {
-    @apply text-primary hover:text-primary/80;
-  } */
+  .prose {
+    @apply text-foreground max-w-none; /* Ensure max-width is not restricted by default */
+
+    /* Basic text elements */
+    p, ul, ol, blockquote {
+      @apply my-4; /* Adjust vertical spacing */
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      @apply font-semibold my-6; /* Adjust heading margins */
+    }
+    h1 { @apply text-2xl; }
+    h2 { @apply text-xl; }
+    h3 { @apply text-lg; }
+    /* Add more heading sizes if needed */
+
+    /* Links */
+    a {
+      @apply text-primary underline hover:text-primary/80 transition-colors;
+    }
+
+    /* Lists */
+    ul, ol {
+      @apply pl-6; /* Indentation for lists */
+    }
+    li > ul, li > ol {
+      @apply mt-2; /* Spacing for nested lists */
+    }
+    li::marker {
+      @apply text-muted-foreground; /* Style list markers */
+    }
+
+    /* Code */
+    code {
+      @apply bg-muted px-1 py-0.5 rounded text-sm font-mono text-foreground; /* Inline code styling */
+      /* Prevent background color inheritance in code blocks */
+      background-color: theme('colors.muted.DEFAULT');
+    }
+    /* Remove default prose code::before/after content */
+    code::before, code::after {
+      content: none;
+    }
+
+    /* Code Blocks */
+    pre {
+      @apply bg-muted p-4 rounded overflow-x-auto my-4; /* Code block background and padding */
+    }
+    pre code {
+      @apply bg-transparent p-0 text-sm font-mono text-foreground; /* Code inside pre should be transparent */
+      background-color: transparent !important; /* Ensure transparency */
+    }
+
+    /* Blockquotes */
+    blockquote {
+      @apply border-l-4 border-border pl-4 italic text-muted-foreground;
+    }
+
+    /* Horizontal Rules */
+    hr {
+      @apply border-t border-border my-6;
+    }
+
+    /* Images (if needed) */
+    img {
+      @apply rounded my-4;
+    }
+
+    /* Tables (if needed) */
+    table {
+      @apply w-full my-4 border-collapse border border-border;
+    }
+    th, td {
+      @apply border border-border px-4 py-2 text-left;
+    }
+    th {
+      @apply font-semibold bg-muted;
+    }
+  }
+
+  /* Dark mode prose styles */
+  .dark .prose {
+    @apply text-foreground; /* Ensure base text color is correct */
+    --tw-prose-invert-body: theme('colors.foreground'); /* Explicitly set dark mode body text */
+
+    a {
+      @apply text-primary hover:text-primary/80;
+    }
+
+    li::marker {
+      @apply text-muted-foreground;
+    }
+
+    code {
+      @apply bg-secondary text-secondary-foreground;
+       background-color: theme('colors.secondary.DEFAULT');
+    }
+
+    pre {
+      @apply bg-secondary;
+    }
+    pre code {
+      @apply bg-transparent text-secondary-foreground;
+       background-color: transparent !important;
+    }
+
+    blockquote {
+      @apply border-border text-muted-foreground;
+    }
+
+    hr {
+      @apply border-border;
+    }
+
+    th {
+      @apply bg-secondary;
+    }
+     th, td {
+      @apply border-border;
+    }
+  }
 }

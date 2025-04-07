@@ -29,29 +29,29 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setError(null);
 
     try {
-      console.log(`Fetching profile for user_id: ${user.id}`);
+      console.log(`[ProfileContext] Fetching profile for user_id: ${user.id}`); // Added Context prefix
       const { data, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
         .single();
 
-      // PGRST116 means no row found, which is okay, we'll create a default one locally for the form
-      if (fetchError && fetchError.code !== 'PGRST116') { // Fixed: &amp;&amp; -> &&
-        console.error('Supabase fetch error:', fetchError);
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('[ProfileContext] Supabase fetch error:', fetchError); // Added Context prefix
         throw fetchError;
       }
 
       if (data) {
-        console.log('Profile data fetched from Supabase:', data);
-        // Ensure gender is valid before setting state
-        if (data.gender !== 'male' && data.gender !== 'female') { // Fixed: &amp;&amp; -> &&
+        console.log('[ProfileContext] Profile data fetched from Supabase:', data); // Added Context prefix
+        if (data.gender !== 'male' && data.gender !== 'female') {
           data.gender = undefined;
         }
         // Add email from auth user to the local profile state for form display
-        setProfile({ ...data, email: user.email } as Profile);
+        const fetchedProfile = { ...data, email: user.email } as Profile;
+        console.log('[ProfileContext] Setting fetched profile state:', fetchedProfile); // Added Context prefix
+        setProfile(fetchedProfile);
       } else {
-        console.log('No profile found in Supabase for user, creating default for form.');
+        console.log('[ProfileContext] No profile found in Supabase for user, creating default for form.'); // Added Context prefix
         // Create a default profile locally if none exists in DB
         const defaultProfile: Profile = {
           user_id: user.id,
@@ -79,10 +79,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           reminder_time: '',
           preferred_response_style: '',
         };
+        console.log('[ProfileContext] Setting default profile state:', defaultProfile); // Added Context prefix
         setProfile(defaultProfile);
       }
     } catch (err: any) {
-      console.error('Error fetching profile:', err);
+      console.error('[ProfileContext] Error fetching profile:', err); // Added Context prefix
       setError(err.message || 'Failed to load profile');
     } finally {
       setLoading(false);
@@ -105,6 +106,9 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setLoading(true);
     setError(null);
 
+    // --- Debug Log 1: Data received from form ---
+    console.log('[ProfileContext] saveProfileToSupabase received:', updatedProfileData);
+
     try {
       // Prepare data for Supabase: ensure user_id is set, remove email
       const profileToSave = {
@@ -114,46 +118,50 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       };
 
       // Ensure gender is valid before saving
-      if (profileToSave.gender !== 'male' && profileToSave.gender !== 'female') { // Fixed: &amp;&amp; -> &&
+      if (profileToSave.gender !== 'male' && profileToSave.gender !== 'female') {
         profileToSave.gender = undefined; // Or null if your DB allows it
       }
 
-      console.log('Attempting to upsert profile to Supabase:', profileToSave);
+      // --- Debug Log 2: Data prepared for Supabase ---
+      console.log('[ProfileContext] Attempting to upsert profile to Supabase:', profileToSave);
 
       // Perform the upsert operation
       const { data, error: upsertError } = await supabase
         .from('profiles')
         .upsert(profileToSave, {
           onConflict: 'user_id', // Specify the conflict target column
-          // returning: 'minimal', // Deprecated, use prefer: 'minimal'
         })
         .select() // Select the upserted data to update local state
         .single(); // Expecting a single row back
 
       if (upsertError) {
-        console.error('Supabase upsert error:', upsertError);
+        console.error('[ProfileContext] Supabase upsert error:', upsertError); // Added Context prefix
         throw upsertError;
       }
 
-      console.log('Profile successfully upserted to Supabase:', data);
+      // --- Debug Log 3: Data returned from Supabase ---
+      console.log('[ProfileContext] Profile successfully upserted, Supabase returned:', data);
 
       // Update local state with the data returned from Supabase (including any defaults/triggers)
       // Add back the email from the auth user for local state consistency
       if (data) {
-         setProfile({ ...data, email: user.email } as Profile);
+         const profileWithEmail = { ...data, email: user.email } as Profile;
+         // --- Debug Log 4: Data being set to local state ---
+         console.log('[ProfileContext] Setting profile state after save:', profileWithEmail);
+         setProfile(profileWithEmail);
       } else {
         // Fallback: update local state with the data we sent, plus email
-        // This might happen if 'select()' doesn't return data as expected in some edge cases
-         setProfile({ ...profileToSave, email: user.email } as Profile);
-         console.warn("Supabase upsert didn't return data, updating local state with sent data.");
+         const profileWithEmail = { ...profileToSave, email: user.email } as Profile;
+         // --- Debug Log 5: Fallback data being set to local state ---
+         console.warn("[ProfileContext] Supabase upsert didn't return data, updating local state with sent data.");
+         console.log('[ProfileContext] Setting profile state after save (fallback):', profileWithEmail);
+         setProfile(profileWithEmail);
       }
 
 
     } catch (err: any) {
-      console.error('Error saving profile to Supabase:', err);
+      console.error('[ProfileContext] Error saving profile to Supabase:', err); // Added Context prefix
       setError(err.message || 'Failed to save profile');
-      // Optionally re-fetch profile on error? Or just show error message.
-      // await fetchProfile(); // Example: Re-fetch to ensure consistency
     } finally {
       setLoading(false);
     }

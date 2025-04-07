@@ -1,48 +1,74 @@
 import React from 'react';
+import { marked } from 'marked'; // Import marked
+import DOMPurify from 'dompurify'; // Import DOMPurify
 import { Message } from '../../types';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { User, Sparkles } from 'lucide-react'; // Import Sparkles, keep User for fallback
+import { Avatar, AvatarFallback } from '../ui/avatar';
+import { User, Sparkles } from 'lucide-react';
 
 interface ChatMessageProps {
   message: Message;
-  userInitial: string; // Add prop for user initial
+  userInitial: string;
 }
+
+// Configure marked (optional, but good practice)
+// Ensure compatibility with GitHub Flavored Markdown and add line breaks
+marked.setOptions({
+  breaks: true, // Convert single line breaks in Markdown to <br> tags
+  gfm: true,    // Enable GitHub Flavored Markdown (includes tables, strikethrough, etc.)
+});
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, userInitial }) => {
   const isUser = message.role === 'user';
 
+  // Sanitize and render Markdown for assistant messages
+  const renderContent = () => {
+    if (!isUser) {
+      // 1. Parse Markdown to HTML using marked
+      // Ensure message.content is treated as a string
+      const rawMarkup = marked.parse(String(message.content || ''));
+
+      // 2. Sanitize the HTML using DOMPurify
+      // Allow common formatting tags, but prevent script execution or harmful attributes
+      const sanitizedMarkup = DOMPurify.sanitize(rawMarkup, {
+         USE_PROFILES: { html: true } // Use the default HTML profile (allows common tags like p, strong, em, ul, ol, li, code, pre, blockquote, a[href], etc.)
+         // Add specific tags or attributes if needed, e.g., ADD_TAGS: ['iframe'], ADD_ATTR: ['target']
+      });
+
+      // 3. Render the sanitized HTML using dangerouslySetInnerHTML
+      // Apply Tailwind Typography plugin classes for styling
+      return <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizedMarkup }} />;
+    }
+    // Render user messages as plain text (no Markdown processing)
+    return <p className="text-sm">{message.content}</p>;
+  };
+
   return (
     <div className={`flex items-start space-x-3 my-4 ${isUser ? 'justify-end' : ''}`}>
+      {/* Assistant Avatar */}
       {!isUser && (
-        <Avatar className="h-8 w-8">
-          {/* Optional Bot Image */}
-          {/* <AvatarImage src="/path/to/bot-avatar.png" alt="Assistant" /> */}
+        <Avatar className="h-8 w-8 flex-shrink-0"> {/* Prevent avatar shrinking */}
           <AvatarFallback className="bg-accent text-accent-foreground">
-            {/* Updated Bot Icon */}
             <Sparkles className="h-5 w-5" />
           </AvatarFallback>
         </Avatar>
       )}
+
+      {/* Message Bubble */}
       <div
-        className={`p-3 rounded-lg max-w-xs md:max-w-md lg:max-w-lg break-words shadow-sm ${ // Added subtle shadow
+        className={`p-3 rounded-lg max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl break-words shadow-sm ${ // Adjusted max-widths
           isUser
-            ? 'bg-primary text-primary-foreground' // User message: Orange background, dark text
-            : 'bg-card text-card-foreground' // Assistant message: Card background, default text
+            ? 'bg-primary text-primary-foreground' // User message style
+            : 'bg-card text-card-foreground' // Assistant message style
         }`}
       >
-        <p className="text-sm">{message.content}</p>
-        {/* Optional: Timestamp */}
-        {/* <p className={`text-xs mt-1 ${isUser ? 'text-primary-foreground/70' : 'text-muted-foreground/70'}`}>
-          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </p> */}
+        {renderContent()} {/* Render processed or plain content */}
       </div>
+
+      {/* User Avatar */}
       {isUser && (
-        <Avatar className="h-8 w-8">
-          {/* Optional User Image */}
-          {/* <AvatarImage src={user?.avatarUrl} alt="User" /> */}
+        <Avatar className="h-8 w-8 flex-shrink-0"> {/* Prevent avatar shrinking */}
           <AvatarFallback className="bg-secondary text-secondary-foreground">
-            {/* Display user's first initial */}
-            {userInitial || <User className="h-5 w-5" />} {/* Fallback to User icon if initial is missing */}
+            {userInitial || <User className="h-5 w-5" />} {/* Display user initial or fallback icon */}
           </AvatarFallback>
         </Avatar>
       )}

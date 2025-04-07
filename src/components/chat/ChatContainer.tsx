@@ -13,7 +13,7 @@ const ChatContainer: React.FC = () => {
     messages,
     loading,
     sendMessage,
-    chatId,
+    // chatId, // Chat ID is no longer needed here for display
     useTestWebhook,
     toggleWebhook,
     lastSentPayload,
@@ -22,21 +22,24 @@ const ChatContainer: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Ensure the bottom of the message list is visible after messages update
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
+    // Send initial welcome message if chat is empty
     if (messages.length === 0 && !loading) {
       const timer = setTimeout(() => {
         if (messages.length === 0) {
-           const welcomeText = `Hi there! I'm Companira, your psychological assistant. How are you feeling today? You can share anything that's on your mind, ask for advice, or just chat about your day.`;
+           // Updated welcome text
+           const welcomeText = `Hi there! I'm Companira, your psychological assistant. Enjoy our journey together. How are you feeling today?`;
            sendMessage('', 'assistant', welcomeText);
         }
-      }, 500);
+      }, 500); // Small delay to ensure UI is ready
       return () => clearTimeout(timer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages.length, loading]);
+  }, [messages.length, loading]); // Rerun if messages or loading state changes
 
   const userNickname = user?.nickname || 'User';
   const userInitial = userNickname?.charAt(0).toUpperCase() || 'U';
@@ -50,11 +53,11 @@ const ChatContainer: React.FC = () => {
   };
 
   return (
-    // Ensure the container takes full height and uses flex column layout
-    <div className="flex flex-col h-full bg-background"> {/* Added bg-background here */}
+    <div className="flex flex-col h-full bg-background">
 
-      {/* Header Section (Webhook Toggle & Payload Button) */}
+      {/* Header Section */}
       <div className="flex-shrink-0 border-b p-2 bg-background flex items-center justify-between space-x-4">
+        {/* Left side: Webhook Toggle */}
         <div className="flex items-center space-x-2">
           <Switch
             id="webhook-toggle"
@@ -65,6 +68,7 @@ const ChatContainer: React.FC = () => {
             {useTestWebhook ? 'Using Test Webhook' : 'Using Production Webhook'}
           </Label>
         </div>
+        {/* Right side: Show Payload Button (Chat ID removed) */}
         <Button
           variant="outline"
           size="sm"
@@ -77,11 +81,12 @@ const ChatContainer: React.FC = () => {
         </Button>
       </div>
 
-      {/* Message List Area (Takes up remaining space and scrolls) */}
-      <div className="flex-grow overflow-y-auto p-4 bg-muted/20"> {/* Use themed background */}
+      {/* Message List Area */}
+      <div className="flex-grow overflow-y-auto p-4 bg-muted/20">
         {messages.length === 0 && !loading ? (
            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-             <p className="text-center">Start the conversation by typing below.</p>
+             {/* Placeholder while waiting for welcome message */}
+             <p className="text-center">Starting your session...</p>
            </div>
         ) : messages.length === 0 && loading ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
@@ -98,6 +103,7 @@ const ChatContainer: React.FC = () => {
           ))
         )}
 
+        {/* Loading indicator when assistant is typing */}
         {loading && messages.length > 0 && (
           <div className="flex items-center space-x-2 text-muted-foreground my-4 pl-12">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -105,12 +111,12 @@ const ChatContainer: React.FC = () => {
           </div>
         )}
 
-        {/* Scroll anchor */}
+        {/* Scroll anchor: This empty div is the target for scrollIntoView */}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Chat Input Area (Fixed at the bottom, doesn't grow) */}
-      <div className="flex-shrink-0 p-2 border-t bg-background"> {/* Added padding and border */}
+      {/* Chat Input Area */}
+      <div className="flex-shrink-0 p-2 border-t bg-background">
         <ChatInput />
       </div>
     </div>

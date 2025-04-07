@@ -1,180 +1,143 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { MessageSquare, User, BarChart2, Wrench, Info, Menu, X, Sun, Moon } from 'lucide-react'; // Import Sun/Moon
-import { Button } from '../ui/button';
-import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext'; // Import useTheme
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Moon, Sun, LogOut, UserCircle, LayoutGrid, Wrench, BarChart2, BookOpen, Info, MessageSquare /* Added Chat icon */ } from 'lucide-react'; // Added MessageSquare
 
-const Navbar: React.FC = () => {
-  const { user, signOut } = useAuth();
-  const { theme, toggleTheme } = useTheme(); // Use theme context
-  const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+const Navbar = () => {
+  const { user, signOut, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  const handleSignOut = async () => {
+    await signOut();
+    // Navigation is handled within signOut or by AuthProvider listener
   };
 
-  const navItems = [
-    { path: '/', label: 'Chat', icon: <MessageSquare className="h-5 w-5" /> },
-    { path: '/profile', label: 'Profile', icon: <User className="h-5 w-5" /> },
-    { path: '/analysis', label: 'Analysis', icon: <BarChart2 className="h-5 w-5" /> },
-    { path: '/tools', label: 'Tools', icon: <Wrench className="h-5 w-5" /> },
-    { path: '/about', label: 'About', icon: <Info className="h-5 w-5" /> },
-  ];
+  const getInitials = (name: string | undefined) => {
+    if (!name) return 'U';
+    const parts = name.split(' ').filter(Boolean);
+    if (parts.length === 0) return 'U';
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
 
   return (
-    <nav className="bg-card shadow-md border-b border-border sticky top-0 z-50"> {/* Make navbar sticky */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="flex items-center space-x-2">
-                <MessageSquare className="h-8 w-8 text-primary" />
-                <span className="text-xl font-bold text-foreground">Companira</span>
-              </Link>
+    <nav className="bg-card border-b border-border shadow-sm sticky top-0 z-50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Left Side: Logo/Brand and Main Links */}
+          <div className="flex items-center space-x-6">
+            {/* Companira Logo/Brand Link */}
+            <Link to="/" className="text-xl font-bold text-primary flex items-center">
+              Companira
+            </Link>
+            {/* --- Desktop Navigation Links --- */}
+            <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
+               {/* Home/Chat Link */}
+               <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center">
+                 {user ? <MessageSquare className="h-4 w-4 mr-1.5" /> : <LayoutGrid className="h-4 w-4 mr-1.5" />}
+                 {user ? 'Chat' : 'Home'}
+               </Link>
+               {/* Life Situations Link (Always Visible) */}
+               <Link to="/life-situations" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center">
+                 <BookOpen className="h-4 w-4 mr-1.5" /> Life Situations
+               </Link>
+               {/* Analysis Link (Logged-in only) */}
+               {user && (
+                 <Link to="/analysis" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center">
+                   <BarChart2 className="h-4 w-4 mr-1.5" /> Analysis
+                 </Link>
+               )}
+               {/* Tools Link (Logged-in only) */}
+               {user && (
+                 <Link to="/tools" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center">
+                   <Wrench className="h-4 w-4 mr-1.5" /> Tools
+                 </Link>
+               )}
+               {/* About Link (Always Visible) */}
+               <Link to="/about" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center">
+                 <Info className="h-4 w-4 mr-1.5" /> About
+               </Link>
             </div>
           </div>
 
-          {/* Desktop navigation */}
-          <div className="hidden md:flex md:items-center md:space-x-1"> {/* Reduced space slightly */}
-            {user && (
-              <>
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 ease-in-out ${
-                      location.pathname === item.path
-                        ? 'bg-secondary text-secondary-foreground'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                  >
-                    {item.icon}
-                    <span className="ml-2">{item.label}</span>
-                  </Link>
-                ))}
-                 <Button
-                  variant="ghost" // Use ghost for subtle icon button
-                  size="icon"
-                  onClick={toggleTheme}
-                  className="ml-2 text-muted-foreground hover:text-foreground hover:bg-muted"
-                  aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                >
-                  {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => signOut()}
-                  className="ml-2 border-primary text-primary hover:bg-primary/10"
-                >
-                  Sign Out
-                </Button>
-              </>
-            )}
-            {!user && (
-              <div className="flex items-center space-x-2">
-                 <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleTheme}
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted"
-                  aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                >
-                  {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                </Button>
-                <Link to="/login">
-                  <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">Log In</Button>
-                </Link>
-                <Link to="/signup">
-                  <Button>Sign Up</Button>
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="flex items-center md:hidden">
-             {/* Theme toggle for mobile */}
-             <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="mr-2 text-muted-foreground hover:text-foreground hover:bg-muted"
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            >
-              {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          {/* Right Side: Theme Toggle, Auth Buttons/User Menu */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Theme Toggle Button */}
+            <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
-            <button
-              onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
-              aria-controls="mobile-menu"
-              aria-expanded={isMenuOpen}
-            >
-              <span className="sr-only">Open main menu</span>
-              {isMenuOpen ? (
-                <X className="block h-6 w-6" />
-              ) : (
-                <Menu className="block h-6 w-6" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden border-t border-border" id="mobile-menu">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {user && (
+            {authLoading ? (
+              <div className="h-8 w-20 bg-muted rounded animate-pulse"></div>
+            ) : user ? (
               <>
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-150 ease-in-out ${
-                      location.pathname === item.path
-                        ? 'bg-secondary text-secondary-foreground'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.icon}
-                    <span className="ml-2">{item.label}</span>
-                  </Link>
-                ))}
-                <button
-                  onClick={() => {
-                    signOut();
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full flex items-center justify-center px-3 py-2 rounded-md text-base font-medium text-primary border border-primary hover:bg-primary/10 mt-2"
-                >
-                  Sign Out
-                </button>
+                {/* User Avatar and Nickname */}
+                <Link to="/profile" className="flex items-center space-x-2 hover:bg-accent p-1 rounded-md transition-colors">
+                   <Avatar className="h-8 w-8">
+                     <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                       {getInitials(user.nickname)}
+                     </AvatarFallback>
+                   </Avatar>
+                   <span className="text-sm font-medium hidden sm:inline">{user.nickname}</span>
+                </Link>
+
+                {/* Sign Out Button */}
+                <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out">
+                  <LogOut className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+                </Button>
+              </>
+            ) : (
+              <>
+                {/* Login/Signup Buttons */}
+                <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
+                  Log In
+                </Button>
+                <Button variant="default" size="sm" onClick={() => navigate('/signup')}>
+                  Sign Up
+                </Button>
               </>
             )}
-            {!user && (
-              <div className="space-y-2 pt-2">
-                <Link
-                  to="/login"
-                  className="block w-full px-3 py-2 rounded-md text-base font-medium text-center text-primary border border-primary hover:bg-primary/10"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Log In
-                </Link>
-                <Link
-                  to="/signup"
-                  className="block w-full px-3 py-2 rounded-md text-base font-medium text-center text-primary-foreground bg-primary hover:bg-primary/90"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign Up
-                </Link>
-              </div>
-            )}
           </div>
         </div>
-      )}
+
+         {/* --- Mobile Navigation Links --- */}
+         <div className="md:hidden flex justify-around items-center py-2 border-t border-border bg-card">
+             {/* Home/Chat Link */}
+             <Link to="/" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
+               {user ? <MessageSquare className="h-5 w-5 mb-0.5" /> : <LayoutGrid className="h-5 w-5 mb-0.5" />}
+               {user ? 'Chat' : 'Home'}
+             </Link>
+             {/* Life Situations Link (Always Visible) */}
+             <Link to="/life-situations" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
+               <BookOpen className="h-5 w-5 mb-0.5" /> Situations
+             </Link>
+             {/* Analysis Link (Logged-in only) */}
+             {user && (
+               <Link to="/analysis" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
+                 <BarChart2 className="h-5 w-5 mb-0.5" /> Analysis
+               </Link>
+             )}
+             {/* Tools Link (Logged-in only) */}
+             {user && (
+               <Link to="/tools" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
+                 <Wrench className="h-5 w-5 mb-0.5" /> Tools
+               </Link>
+             )}
+             {/* About Link (Always Visible) */}
+             <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
+               <Info className="h-5 w-5 mb-0.5" /> About
+             </Link>
+             {/* Profile link only shown if logged in on mobile */}
+             {user && (
+                <Link to="/profile" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
+                  <UserCircle className="h-5 w-5 mb-0.5" /> Profile
+                </Link>
+             )}
+         </div>
+      </div>
     </nav>
   );
 };

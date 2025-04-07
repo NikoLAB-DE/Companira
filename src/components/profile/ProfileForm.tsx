@@ -18,6 +18,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 // Updated Zod schema (email is still here for form validation, but won't be saved to DB)
+// No changes needed here as the fields are already strings
 const profileSchema = z.object({
   // Basic Identity
   nickname: z.string().min(1, 'Nickname is required'),
@@ -33,11 +34,11 @@ const profileSchema = z.object({
 
   // Assistant Setup
   assistant_name: z.string().optional().or(z.literal('')),
-  persona: z.string().optional().or(z.literal('')),
-  tone: z.string().optional().or(z.literal('')),
+  persona: z.string().optional().or(z.literal('')), // Will store full description or value
+  tone: z.string().optional().or(z.literal('')), // Will store full description or value
   gender: z.enum(['male', 'female']).optional(),
   response_length: z.enum(['short', 'medium', 'long']).optional(),
-  content_style: z.string().optional().or(z.literal('')),
+  content_style: z.string().optional().or(z.literal('')), // Will store full description or value
 
   // Reminders
   reminders_enabled: z.boolean().optional(),
@@ -81,18 +82,39 @@ const contentStyleOptions = [
   { value: 'detailed', label: 'Detailed', description: 'Rich, structured responses' },
 ];
 
+// Helper function to get full description string from a value
+const getFullDescription = (
+    value: string | undefined,
+    options: { value: string; label: string; description: string }[]
+): string | undefined => {
+    if (!value) return undefined;
+    const selectedOption = options.find(option => option.value === value);
+    // Return the constructed string or the original value if not found (handles empty selection)
+    return selectedOption ? `${selectedOption.label} – ${selectedOption.description}` : value;
+};
+
+// Helper function to get the 'value' part from a full description string or return original if not a description
+const getValueFromDescription = (
+    descriptionString: string | undefined | null, // Allow null from DB
+    options: { value: string; label: string; description: string }[]
+): string | undefined => {
+    if (!descriptionString) return undefined;
+    const foundOption = options.find(option => `${option.label} – ${option.description}` === descriptionString);
+    // Return the value if found, otherwise return the original string (it might be a value already or empty)
+    return foundOption ? foundOption.value : descriptionString;
+};
+
 
 const ProfileForm: React.FC = () => {
-  // Use the new function for saving to Supabase
   const { profile, loading, error, saveProfileToSupabase } = useProfile();
   const { user } = useAuth();
 
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<Profile>({
     resolver: zodResolver(profileSchema),
-    // Default values remain the same
+    // Initialize with empty strings or default values that match the 'value' part
     defaultValues: {
       nickname: '',
-      email: '', // Will be populated from user/profile context
+      email: '',
       language: 'EN',
       gender: undefined,
       assistant_name: '',
@@ -103,9 +125,9 @@ const ProfileForm: React.FC = () => {
       avoid_topics: [],
       other_avoid_topic: '',
       emoji_preference: 'less',
-      persona: '',
-      tone: '',
-      content_style: '',
+      persona: '', // Store the 'value' initially
+      tone: '', // Store the 'value' initially
+      content_style: '', // Store the 'value' initially
       current_situation: '',
       focused_problem: '',
       telegram_handle: '',
@@ -117,11 +139,18 @@ const ProfileForm: React.FC = () => {
     },
   });
 
-  // Effect to reset form with profile data (including email from context/user)
+
+  // Effect to reset form with profile data
   useEffect(() => {
+    // When loading profile data from context (which might have full descriptions),
+    // convert them back to the corresponding 'value' for the Select components.
+    const personaValue = getValueFromDescription(profile?.persona, personaOptions);
+    const toneValue = getValueFromDescription(profile?.tone, toneOptions);
+    const contentStyleValue = getValueFromDescription(profile?.content_style, contentStyleOptions);
+
     const defaultValues = {
-      nickname: profile?.nickname || user?.nickname || '', // Fallback to user nickname if profile nickname is empty
-      email: profile?.email || user?.email || '', // Use email from profile context (which gets it from user)
+      nickname: profile?.nickname || user?.nickname || '',
+      email: profile?.email || user?.email || '',
       language: profile?.language || 'EN',
       gender: profile?.gender === 'male' || profile?.gender === 'female' ? profile.gender : undefined,
       assistant_name: profile?.assistant_name || '',
@@ -132,9 +161,9 @@ const ProfileForm: React.FC = () => {
       avoid_topics: profile?.avoid_topics || [],
       other_avoid_topic: profile?.other_avoid_topic || '',
       emoji_preference: profile?.emoji_preference || 'less',
-      persona: profile?.persona || '',
-      tone: profile?.tone || '',
-      content_style: profile?.content_style || '',
+      persona: personaValue || '', // Use the extracted value or empty string
+      tone: toneValue || '', // Use the extracted value or empty string
+      content_style: contentStyleValue || '', // Use the extracted value or empty string
       current_situation: profile?.current_situation || '',
       focused_problem: profile?.focused_problem || '',
       telegram_handle: profile?.telegram_handle || '',
@@ -148,26 +177,38 @@ const ProfileForm: React.FC = () => {
   }, [profile, user, reset]);
 
 
-  const remindersEnabled = watch('reminders_enabled');
-  const selectedPersona = watch('persona');
-  const selectedTone = watch('tone');
-  const selectedContentStyle = watch('content_style');
+  // Watch the 'value' fields from the form state for Select components
+  const selectedPersonaValue = watch('persona');
+  const selectedToneValue = watch('tone');
+  const selectedContentStyleValue = watch('content_style');
   const selectedGender = watch('gender');
   const selectedEmojiPreference = watch('emoji_preference');
+  const remindersEnabled = watch('reminders_enabled');
+
 
   const onSubmit = async (data: Profile) => {
     if (!user) {
       console.error("User not logged in, cannot save profile.");
-      return; // Should not happen if form is protected, but good practice
+      return;
     }
 
-    // Prepare data for saving: exclude email, ensure user_id
-    // The 'email' field from the form 'data' is automatically excluded
-    // because saveProfileToSupabase expects Omit<Profile, 'email'>
+    // --- Modification Start ---
+    // Get the full descriptive text for selected options based on the 'value' from the form data
+    const fullPersona = getFullDescription(data.persona, personaOptions);
+    const fullTone = getFullDescription(data.tone, toneOptions);
+    const fullContentStyle = getFullDescription(data.content_style, contentStyleOptions);
+
+    // Prepare data for saving: exclude email, ensure user_id, use full descriptions
     const dataToSave = {
       ...data,
       user_id: user.id, // Ensure user_id is set
+      // Use the full description string if found, otherwise keep the original value (which might be empty string or the value itself if lookup failed)
+      persona: fullPersona,
+      tone: fullTone,
+      content_style: fullContentStyle,
     };
+    // --- Modification End ---
+
 
     // Remove email explicitly just to be absolutely sure, though type checking helps
     delete (dataToSave as any).email;
@@ -177,7 +218,9 @@ const ProfileForm: React.FC = () => {
         dataToSave.gender = undefined;
     }
 
-    // Call the Supabase save function
+    console.log("Data being sent to saveProfileToSupabase:", dataToSave); // Log data before saving
+
+    // Call the Supabase save function with the modified data
     await saveProfileToSupabase(dataToSave);
   };
 
@@ -194,7 +237,7 @@ const ProfileForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Tabs defaultValue="identity" className="w-full">
-        {/* Modified TabsList to stack vertically on small screens */}
+        {/* TabsList remains the same */}
         <div className="mb-4 overflow-x-auto">
           <TabsList className="flex flex-wrap w-full">
             <TabsTrigger value="identity" className="flex-grow min-w-[100px] text-center">Identity</TabsTrigger>
@@ -205,7 +248,7 @@ const ProfileForm: React.FC = () => {
           </TabsList>
         </div>
 
-        {/* Basic Identity */}
+        {/* Identity Tab Content remains the same */}
         <TabsContent value="identity">
           <Card>
             <CardHeader>
@@ -272,7 +315,7 @@ const ProfileForm: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Life Context */}
+        {/* Context Tab Content remains the same */}
         <TabsContent value="context">
           <Card>
             <CardHeader>
@@ -344,7 +387,7 @@ const ProfileForm: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Assistant Setup */}
+        {/* Assistant Setup Tab Content - Select components now use the watched 'value' */}
         <TabsContent value="assistant">
           <Card>
             <CardHeader>
@@ -359,11 +402,16 @@ const ProfileForm: React.FC = () => {
                 <Label htmlFor="persona">Assistant Persona</Label>
                  <p className="text-sm text-muted-foreground">🎭 "Who" the assistant is. Defines role, experience, and style.</p>
                 <Select
-                  value={selectedPersona}
-                  onValueChange={(value) => setValue('persona', value)}
+                  // Bind the Select's value to the form state's 'persona' field (which holds the 'value')
+                  value={selectedPersonaValue}
+                  // When changed, update the form state's 'persona' field with the new 'value'
+                  onValueChange={(value) => setValue('persona', value, { shouldValidate: true })} // Trigger validation on change
                 >
                   <SelectTrigger id="persona">
-                    <SelectValue placeholder="Select a persona..." />
+                    {/* Display the label corresponding to the selected value */}
+                    <SelectValue placeholder="Select a persona...">
+                      {personaOptions.find(o => o.value === selectedPersonaValue)?.label || "Select a persona..."}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {personaOptions.map((option) => (
@@ -373,17 +421,23 @@ const ProfileForm: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                 {/* Display Zod error if any */}
+                 {errors.persona && (
+                    <p className="text-sm text-red-500">{errors.persona.message}</p>
+                  )}
               </div>
               {/* Tone */}
               <div className="space-y-2">
                 <Label htmlFor="tone">Communication Tone</Label>
                 <p className="text-sm text-muted-foreground">🗣️ "How" they talk. Shapes language style and emotional expression.</p>
                 <Select
-                  value={selectedTone}
-                  onValueChange={(value) => setValue('tone', value)}
+                  value={selectedToneValue}
+                  onValueChange={(value) => setValue('tone', value, { shouldValidate: true })}
                 >
                   <SelectTrigger id="tone">
-                    <SelectValue placeholder="Select a tone..." />
+                     <SelectValue placeholder="Select a tone...">
+                       {toneOptions.find(o => o.value === selectedToneValue)?.label || "Select a tone..."}
+                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {toneOptions.map((option) => (
@@ -393,17 +447,22 @@ const ProfileForm: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                 {errors.tone && (
+                    <p className="text-sm text-red-500">{errors.tone.message}</p>
+                  )}
               </div>
               {/* Content Style */}
               <div className="space-y-2">
                 <Label htmlFor="content_style">Content Style</Label>
                  <p className="text-sm text-muted-foreground">🎨 The "shape" of the answers. Dictates delivery of ideas.</p>
                 <Select
-                  value={selectedContentStyle}
-                  onValueChange={(value) => setValue('content_style', value)}
+                  value={selectedContentStyleValue}
+                  onValueChange={(value) => setValue('content_style', value, { shouldValidate: true })}
                 >
                   <SelectTrigger id="content_style">
-                    <SelectValue placeholder="Select a content style..." />
+                     <SelectValue placeholder="Select a content style...">
+                       {contentStyleOptions.find(o => o.value === selectedContentStyleValue)?.label || "Select a content style..."}
+                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {contentStyleOptions.map((option) => (
@@ -413,9 +472,12 @@ const ProfileForm: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                 {errors.content_style && (
+                    <p className="text-sm text-red-500">{errors.content_style.message}</p>
+                  )}
               </div>
 
-              {/* Assistant Name and Gender */}
+              {/* Assistant Name and Gender remain the same */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 {/* Assistant Name */}
                 <div className="space-y-2">
@@ -452,7 +514,7 @@ const ProfileForm: React.FC = () => {
                 </div>
               </div>
 
-              {/* Response Length */}
+              {/* Response Length remains the same */}
               <div className="space-y-2">
                 <Label>Response Length</Label>
                 <RadioGroup
@@ -478,7 +540,7 @@ const ProfileForm: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Reminders */}
+        {/* Reminders Tab Content remains the same */}
         <TabsContent value="reminders">
           <Card>
             <CardHeader>
@@ -562,7 +624,7 @@ const ProfileForm: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Additional */}
+        {/* Additional Tab Content remains the same */}
         <TabsContent value="additional">
           <Card>
             <CardHeader>
@@ -665,7 +727,7 @@ const ProfileForm: React.FC = () => {
               Saving...
             </>
           ) : (
-            'Save Profile' // Updated button text
+            'Save Profile'
           )}
         </Button>
       </div>

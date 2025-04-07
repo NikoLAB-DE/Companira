@@ -2,14 +2,64 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { Message } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from './AuthContext';
-import { supabase } from '../lib/supabase'; // Import supabase client
+import { supabase } from '../lib/supabase';
 
+// --- Constants ---
+const PRODUCTION_WEBHOOK_URL = 'https://flow.lazy-bees.com/webhook/companira-chat';
+const TEST_WEBHOOK_URL = 'https://flow.lazy-bees.com/webhook-test/companira-chat';
+const SESSION_STORAGE_KEY_PREFIX = 'companira-chat-history-';
+
+// --- Helper Functions ---
+const getStorageKey = (userId: string | undefined): string | null => {
+  return userId ? `${SESSION_STORAGE_KEY_PREFIX}${userId}` : null;
+};
+
+const loadMessagesFromStorage = (userId: string | undefined): Message[] => {
+  const key = getStorageKey(userId);
+  if (!key) return [];
+  try {
+    const storedMessages = sessionStorage.getItem(key);
+    if (storedMessages) {
+      const parsedMessages: Message[] = JSON.parse(storedMessages);
+      // Basic validation (ensure it's an array)
+      return Array.isArray(parsedMessages) ? parsedMessages : [];
+    }
+  } catch (error) {
+    console.error('Error loading messages from sessionStorage:', error);
+  }
+  return [];
+};
+
+const saveMessagesToStorage = (userId: string | undefined, messages: Message[]) => {
+  const key = getStorageKey(userId);
+  if (!key) return;
+  try {
+    sessionStorage.setItem(key, JSON.stringify(messages));
+  } catch (error) {
+    console.error('Error saving messages to sessionStorage:', error);
+  }
+};
+
+const clearMessagesFromStorage = (userId: string | undefined) => {
+    const key = getStorageKey(userId);
+    if (key) {
+        try {
+            sessionStorage.removeItem(key);
+            console.log(`Cleared chat history from sessionStorage for key: ${key}`);
+        } catch (error) {
+            console.error('Error clearing messages from sessionStorage:', error);
+        }
+    }
+};
+
+
+// --- Context Definition ---
 interface ChatContextType {
   messages: Message[];
   loading: boolean;
   sendMessage: (content: string, role?: 'user' | 'assistant', initialContent?: string) => void;
-  clearMessages: () => void;
-  chatId: string; // Keep chatId for potential future use or logging, but thread_id is primary now
+  clearMessages: () => void; // Clears current session messages
+  chatId: string; // Session-specific ID (might be less relevant now)
   useTestWebhook: boolean;
   toggleWebhook: () => void;
   lastSentPayload: Record<string, any> | null;
@@ -18,40 +68,38 @@ interface ChatContextType {
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-// Webhook URLs
-const PRODUCTION_WEBHOOK_URL = 'https://flow.lazy-bees.com/webhook/companira-chat';
-const TEST_WEBHOOK_URL = 'https://flow.lazy-bees.com/webhook-test/companira-chat';
-
+// --- Provider Component ---
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [chatId, setChatId] = useState<string>(uuidv4()); // Session-specific ID
-  const [mainThreadId, setMainThreadId] = useState<string | null>(null); // State for the user's main chat thread ID
-  const [threadLoadingError, setThreadLoadingError] = useState<string | null>(null); // State for thread loading errors
+  const [mainThreadId, setMainThreadId] = useState<string | null>(null);
+  const [threadLoadingError, setThreadLoadingError] = useState<string | null>(null);
   const [useTestWebhook, setUseTestWebhook] = useState(false);
   const [lastSentPayload, setLastSentPayload] = useState<Record<string, any> | null>(null);
-  const { user } = useAuth();
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false); // Track initial load
 
-  // Function to fetch the main chat thread ID for the current user
+  // --- Thread ID Management ---
   const fetchAndSetMainThreadId = useCallback(async (userId: string) => {
-    setThreadLoadingError(null); // Reset error on fetch attempt
-    setMainThreadId(null); // Reset thread ID before fetching
+    setThreadLoadingError(null);
+    setMainThreadId(null);
     console.log(`Fetching main thread ID for user: ${userId}`);
     try {
       const { data, error } = await supabase
         .from('chat_threads')
         .select('id')
         .eq('user_id', userId)
-        .eq('title', 'Main Chat') // Assuming the main chat is always titled 'Main Chat'
-        .single(); // Expect only one main chat thread per user
+        .eq('title', 'Main Chat')
+        .single();
 
       if (error) {
-        if (error.code === 'PGRST116') { // PostgREST error code for "Resource not found"
-          console.warn(`Main Chat thread not found for user ${userId}. It might need to be created.`);
-          setThreadLoadingError('Could not find your main chat thread. Please ensure it exists or contact support.');
+        if (error.code === 'PGRST116') {
+          console.warn(`Main Chat thread not found for user ${userId}.`);
+          setThreadLoadingError('Could not find your main chat thread.');
         } else {
           console.error('Error fetching main thread ID:', error);
-          setThreadLoadingError('Failed to load chat thread information. Please try again later.');
+          setThreadLoadingError('Failed to load chat thread information.');
         }
         setMainThreadId(null);
       } else if (data) {
@@ -67,102 +115,90 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setThreadLoadingError('An unexpected error occurred while loading chat information.');
       setMainThreadId(null);
     }
-  }, []); // No dependencies needed as it uses passed userId
+  }, []);
 
-  // Effect to fetch thread ID when user logs in or changes
+  // Effect: Fetch thread ID when user logs in
   useEffect(() => {
     if (user?.id) {
       fetchAndSetMainThreadId(user.id);
     } else {
-      // Clear thread ID if user logs out
       setMainThreadId(null);
-      setThreadLoadingError(null); // Clear error on logout
+      setThreadLoadingError(null);
     }
-  }, [user, fetchAndSetMainThreadId]); // Depend on user and the fetch function
+  }, [user?.id, fetchAndSetMainThreadId]); // Depend only on user.id
 
-  // Effect to reset chat when user changes or webhook type changes
+  // Effect: Load messages from storage on initial mount or user change
   useEffect(() => {
-    console.log('User or webhook type changed. Resetting chat messages.');
-    setMessages([]); // Clear messages
-    setChatId(uuidv4()); // Generate a new chat ID for the new session
-    setLastSentPayload(null); // Clear last payload on reset
-    // MainThreadId is handled by the user effect above
-  }, [user, useTestWebhook]); // Depend on user and useTestWebhook
+    console.log("Auth state changed, attempting to load messages for user:", user?.id);
+    if (user?.id) {
+      const loadedMessages = loadMessagesFromStorage(user.id);
+      console.log(`Loaded ${loadedMessages.length} messages from sessionStorage.`);
+      setMessages(loadedMessages);
+    } else {
+      // If no user, ensure messages are cleared (e.g., after logout)
+      setMessages([]);
+    }
+    setIsInitialLoadComplete(true); // Mark initial load as complete
+  }, [user?.id]); // Depend only on user.id
 
+  // Effect: Save messages to storage when they change
+  useEffect(() => {
+    // Only save after initial load and if user is logged in
+    if (isInitialLoadComplete && user?.id) {
+      console.log(`Saving ${messages.length} messages to sessionStorage.`);
+      saveMessagesToStorage(user.id, messages);
+    }
+  }, [messages, user?.id, isInitialLoadComplete]); // Depend on messages, user.id, and load status
+
+  // Effect: Reset non-persistent state when webhook type changes
+  // (Messages are now handled by persistence logic)
+  useEffect(() => {
+    console.log('Webhook type changed. Resetting session ID and payload.');
+    setChatId(uuidv4()); // Generate a new chat ID for the new session/config
+    setLastSentPayload(null); // Clear last payload on reset
+  }, [useTestWebhook]); // Only depends on webhook toggle
+
+  // --- Webhook & Payload ---
   const toggleWebhook = useCallback(() => {
     setUseTestWebhook(prev => !prev);
-    // Resetting chat messages is now handled by the useEffect above
   }, []);
 
   const clearLastSentPayload = useCallback(() => {
     setLastSentPayload(null);
   }, []);
 
-  // Function to send message to n8n webhook and get response
+  // --- Core Send/Receive Logic ---
   const sendToWebhook = async (message: string): Promise<string> => {
-    // 1. Check for user authentication
-    if (!user?.id) {
-      return "Please log in to send messages.";
-    }
+    if (!user?.id) return "Please log in to send messages.";
+    if (threadLoadingError) return threadLoadingError;
+    if (!mainThreadId) return "Chat thread information is not available. Please wait or try refreshing.";
 
-    // 2. Check if thread ID is loaded (and handle loading errors)
-    if (threadLoadingError) {
-      return threadLoadingError; // Return the specific error message
-    }
-    if (!mainThreadId) {
-      // This case might happen briefly during loading or if fetch failed silently
-      return "Chat thread information is not available. Please wait or try refreshing.";
-    }
-
-    // 3. Construct the payload
-    const payload = {
-      user_id: user.id,
-      thread_id: mainThreadId, // Use the fetched main thread ID
-      message: message
-    };
-
-    // Store the payload before sending
+    const payload = { user_id: user.id, thread_id: mainThreadId, message: message };
     setLastSentPayload(payload);
 
-    // 4. Send the request
     try {
       const webhookUrl = useTestWebhook ? TEST_WEBHOOK_URL : PRODUCTION_WEBHOOK_URL;
       console.log(`Sending to ${useTestWebhook ? 'TEST' : 'PRODUCTION'} webhook:`, payload);
-      console.log('Webhook URL:', webhookUrl);
-
       const response = await fetch(webhookUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const responseText = await response.text();
       console.log('Raw webhook response:', responseText);
 
-      // Basic response parsing (keep as is for now)
-      if (!responseText || responseText.trim() === '') {
-        return "I received your message, but I'm not sure how to respond.";
-      }
+      // Basic response parsing
+      if (!responseText || responseText.trim() === '') return "I received your message, but I'm not sure how to respond.";
       if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
         try {
           const jsonData = JSON.parse(responseText);
           if (typeof jsonData === 'string') return jsonData;
           if (typeof jsonData === 'object') {
-            if (jsonData.output) return jsonData.output;
-            if (jsonData.response) return jsonData.response;
-            if (jsonData.message) return jsonData.message;
-            if (jsonData.text) return jsonData.text;
-            return JSON.stringify(jsonData);
+            return jsonData.output || jsonData.response || jsonData.message || jsonData.text || JSON.stringify(jsonData);
           }
-        } catch (e) {
-          console.log('Failed to parse JSON, using raw text');
-        }
+        } catch (e) { console.log('Failed to parse JSON, using raw text'); }
       }
       return responseText;
     } catch (error) {
@@ -173,35 +209,37 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const sendMessage = useCallback(async (content: string, role: 'user' | 'assistant' = 'user', initialContent?: string) => {
     const messageContent = initialContent || content;
+    if (!messageContent) return; // Don't send empty messages
 
     // Add user message immediately
-    if (role === 'user' && messageContent && !loading) {
+    if (role === 'user' && !loading) {
        const newMessage: Message = {
          id: uuidv4(),
          content: messageContent,
          role,
          timestamp: new Date().toISOString()
        };
+       // Use functional update to ensure we have the latest messages state
        setMessages(prev => [...prev, newMessage]);
 
-       // Check for thread ID issues *before* setting loading and calling webhook
-       if (!user) {
+       // Check for auth/thread issues *before* calling webhook
+       if (!user?.id) {
          const errorMsg: Message = { id: uuidv4(), content: "Please log in to send messages.", role: 'assistant', timestamp: new Date().toISOString() };
          setMessages(prev => [...prev, errorMsg]);
-         return; // Stop processing
+         return;
        }
        if (threadLoadingError) {
          const errorMsg: Message = { id: uuidv4(), content: threadLoadingError, role: 'assistant', timestamp: new Date().toISOString() };
          setMessages(prev => [...prev, errorMsg]);
-         return; // Stop processing
+         return;
        }
        if (!mainThreadId) {
          const errorMsg: Message = { id: uuidv4(), content: "Chat thread information is not available. Please wait or try refreshing.", role: 'assistant', timestamp: new Date().toISOString() };
          setMessages(prev => [...prev, errorMsg]);
-         return; // Stop processing
+         return;
        }
 
-       // If checks pass, proceed to call webhook
+       // Proceed to call webhook
        setLoading(true);
        try {
          const responseContent = await sendToWebhook(messageContent);
@@ -213,12 +251,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
          };
          setMessages(prev => [...prev, aiMessage]);
        } catch (error) {
-         // This catch might be redundant if sendToWebhook always returns a string,
-         // but keep for safety.
-         console.error('Error getting response from webhook:', error);
+         console.error('Error processing webhook response:', error);
          const errorMessage: Message = {
            id: uuidv4(),
-           content: "Oops! Something went wrong processing the response. Please try again.",
+           content: "Oops! Something went wrong processing the response.",
            role: 'assistant',
            timestamp: new Date().toISOString()
          };
@@ -226,7 +262,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
        } finally {
          setLoading(false);
        }
-    } else if (role === 'assistant' && messageContent) {
+    } else if (role === 'assistant') {
        // Directly add assistant messages (e.g., initial welcome)
        const newMessage: Message = {
          id: uuidv4(),
@@ -236,32 +272,40 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
        };
        setMessages(prev => [...prev, newMessage]);
     }
-  }, [loading, user, mainThreadId, threadLoadingError, useTestWebhook, fetchAndSetMainThreadId]); // Added dependencies
+  }, [loading, user?.id, mainThreadId, threadLoadingError, useTestWebhook, fetchAndSetMainThreadId]); // Refined dependencies
 
+  // --- Clear Messages ---
   const clearMessages = useCallback(() => {
+    // Clear state
     setMessages([]);
-    setChatId(uuidv4()); // Reset session ID
-    setLastSentPayload(null); // Clear payload
-    // Do not clear mainThreadId here, it's tied to the user session
-  }, []);
+    // Clear storage for the current user
+    clearMessagesFromStorage(user?.id);
+    // Reset session-specific non-persistent state
+    setChatId(uuidv4());
+    setLastSentPayload(null);
+  }, [user?.id]); // Depend on user.id to clear correct storage key
+
+  // --- Context Value ---
+  const value = {
+    messages,
+    loading,
+    sendMessage,
+    clearMessages,
+    chatId,
+    useTestWebhook,
+    toggleWebhook,
+    lastSentPayload,
+    clearLastSentPayload
+  };
 
   return (
-    <ChatContext.Provider value={{
-      messages,
-      loading,
-      sendMessage,
-      clearMessages,
-      chatId,
-      useTestWebhook,
-      toggleWebhook,
-      lastSentPayload,
-      clearLastSentPayload
-    }}>
+    <ChatContext.Provider value={value}>
       {children}
     </ChatContext.Provider>
   );
 };
 
+// --- Hook ---
 export const useChat = () => {
   const context = useContext(ChatContext);
   if (context === undefined) {
