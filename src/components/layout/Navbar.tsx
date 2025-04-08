@@ -3,7 +3,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Moon, Sun, LogOut, UserCircle, LayoutGrid, Wrench, BarChart2, BookOpen, Info, MessageSquare /* Added Chat icon */ } from 'lucide-react'; // Added MessageSquare
+import {
+  Moon, Sun, LogOut, UserCircle, LayoutGrid, Wrench, BarChart2, BookOpen, Info,
+  MessageSquare, // Added for Chat
+  ClipboardList // Added for Tools
+} from 'lucide-react';
+import { cn } from '@/lib/utils'; // Import cn for conditional classes
 
 const Navbar = () => {
   const { user, signOut, loading: authLoading } = useAuth();
@@ -23,6 +28,13 @@ const Navbar = () => {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
+  const commonLinkClasses = "px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center";
+  const disabledLinkClasses = "opacity-50 cursor-not-allowed pointer-events-none";
+
+  const mobileCommonLinkClasses = "text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1";
+  const mobileDisabledLinkClasses = "opacity-50 cursor-not-allowed pointer-events-none";
+
+
   return (
     <nav className="bg-card border-b border-border shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,29 +47,40 @@ const Navbar = () => {
             </Link>
             {/* --- Desktop Navigation Links --- */}
             <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
-               {/* Home/Chat Link */}
-               <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center">
-                 {user ? <MessageSquare className="h-4 w-4 mr-1.5" /> : <LayoutGrid className="h-4 w-4 mr-1.5" />}
-                 {user ? 'Chat' : 'Home'}
-               </Link>
+               {/* Home / Chat Link */}
+               {user ? (
+                 <Link to="/" className={cn(commonLinkClasses)}>
+                   <MessageSquare className="h-4 w-4 mr-1.5" /> Chat
+                 </Link>
+               ) : (
+                 <Link to="/" className={cn(commonLinkClasses)}>
+                   Home
+                 </Link>
+               )}
                {/* Life Situations Link (Always Visible) */}
-               <Link to="/life-situations" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center">
+               <Link to="/life-situations" className={cn(commonLinkClasses)}>
                  <BookOpen className="h-4 w-4 mr-1.5" /> Life Situations
                </Link>
-               {/* Analysis Link (Logged-in only) */}
-               {user && (
-                 <Link to="/analysis" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center">
-                   <BarChart2 className="h-4 w-4 mr-1.5" /> Analysis
-                 </Link>
-               )}
-               {/* Tools Link (Logged-in only) */}
-               {user && (
-                 <Link to="/tools" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center">
-                   <Wrench className="h-4 w-4 mr-1.5" /> Tools
-                 </Link>
-               )}
+               {/* Analysis Link (Conditional) */}
+               <Link
+                 to="/analysis"
+                 className={cn(commonLinkClasses, !user && disabledLinkClasses)}
+                 aria-disabled={!user}
+                 onClick={(e) => !user && e.preventDefault()} // Prevent navigation if disabled
+               >
+                 <BarChart2 className="h-4 w-4 mr-1.5" /> Analysis
+               </Link>
+               {/* Tools Link (Conditional) */}
+               <Link
+                 to="/tools"
+                 className={cn(commonLinkClasses, !user && disabledLinkClasses)}
+                 aria-disabled={!user}
+                 onClick={(e) => !user && e.preventDefault()} // Prevent navigation if disabled
+               >
+                 <ClipboardList className="h-4 w-4 mr-1.5" /> Tools {/* Updated Icon */}
+               </Link>
                {/* About Link (Always Visible) */}
-               <Link to="/about" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center">
+               <Link to="/about" className={cn(commonLinkClasses)}>
                  <Info className="h-4 w-4 mr-1.5" /> About
                </Link>
             </div>
@@ -105,34 +128,45 @@ const Navbar = () => {
 
          {/* --- Mobile Navigation Links --- */}
          <div className="md:hidden flex justify-around items-center py-2 border-t border-border bg-card">
-             {/* Home/Chat Link */}
-             <Link to="/" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
-               {user ? <MessageSquare className="h-5 w-5 mb-0.5" /> : <LayoutGrid className="h-5 w-5 mb-0.5" />}
-               {user ? 'Chat' : 'Home'}
-             </Link>
+             {/* Home / Chat Link */}
+             {user ? (
+               <Link to="/" className={cn(mobileCommonLinkClasses)}>
+                 <MessageSquare className="h-5 w-5 mb-0.5" /> Chat
+               </Link>
+             ) : (
+               <Link to="/" className={cn(mobileCommonLinkClasses)}>
+                 <LayoutGrid className="h-5 w-5 mb-0.5" /> Home
+               </Link>
+             )}
              {/* Life Situations Link (Always Visible) */}
-             <Link to="/life-situations" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
+             <Link to="/life-situations" className={cn(mobileCommonLinkClasses)}>
                <BookOpen className="h-5 w-5 mb-0.5" /> Situations
              </Link>
-             {/* Analysis Link (Logged-in only) */}
-             {user && (
-               <Link to="/analysis" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
-                 <BarChart2 className="h-5 w-5 mb-0.5" /> Analysis
-               </Link>
-             )}
-             {/* Tools Link (Logged-in only) */}
-             {user && (
-               <Link to="/tools" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
-                 <Wrench className="h-5 w-5 mb-0.5" /> Tools
-               </Link>
-             )}
+             {/* Analysis Link (Conditional) */}
+             <Link
+               to="/analysis"
+               className={cn(mobileCommonLinkClasses, !user && mobileDisabledLinkClasses)}
+               aria-disabled={!user}
+               onClick={(e) => !user && e.preventDefault()} // Prevent navigation if disabled
+             >
+               <BarChart2 className="h-5 w-5 mb-0.5" /> Analysis
+             </Link>
+             {/* Tools Link (Conditional) */}
+             <Link
+               to="/tools"
+               className={cn(mobileCommonLinkClasses, !user && mobileDisabledLinkClasses)}
+               aria-disabled={!user}
+               onClick={(e) => !user && e.preventDefault()} // Prevent navigation if disabled
+             >
+               <ClipboardList className="h-5 w-5 mb-0.5" /> Tools {/* Updated Icon */}
+             </Link>
              {/* About Link (Always Visible) */}
-             <Link to="/about" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
+             <Link to="/about" className={cn(mobileCommonLinkClasses)}>
                <Info className="h-5 w-5 mb-0.5" /> About
              </Link>
              {/* Profile link only shown if logged in on mobile */}
              {user && (
-                <Link to="/profile" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex flex-col items-center text-center px-1">
+                <Link to="/profile" className={cn(mobileCommonLinkClasses)}>
                   <UserCircle className="h-5 w-5 mb-0.5" /> Profile
                 </Link>
              )}

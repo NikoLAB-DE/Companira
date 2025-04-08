@@ -13,7 +13,6 @@ const ChatContainer: React.FC = () => {
     messages,
     loading,
     sendMessage,
-    // chatId, // Chat ID is no longer needed here for display
     useTestWebhook,
     toggleWebhook,
     lastSentPayload,
@@ -22,24 +21,25 @@ const ChatContainer: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Ensure the bottom of the message list is visible after messages update
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    // Send initial welcome message if chat is empty
+    // Send initial welcome message if chat is empty and not loading
     if (messages.length === 0 && !loading) {
       const timer = setTimeout(() => {
+        // Check again inside timeout in case messages arrived quickly
         if (messages.length === 0) {
-           // Updated welcome text
-           const welcomeText = `Hi there! I'm Companira, your psychological assistant. Enjoy our journey together. How are you feeling today?`;
-           sendMessage('', 'assistant', welcomeText);
+           // Updated welcome text as per request
+           const welcomeText = `Hi there! Enjoy our journey.`; // Changed text
+           // Send the message from the 'assistant'
+           sendMessage('', 'assistant', welcomeText); // No user input, role is assistant
         }
-      }, 500); // Small delay to ensure UI is ready
+      }, 500); // Small delay
       return () => clearTimeout(timer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages.length, loading]); // Rerun if messages or loading state changes
+  }, [messages.length, loading]); // Rerun only if message count or loading state changes
 
   const userNickname = user?.nickname || 'User';
   const userInitial = userNickname?.charAt(0).toUpperCase() || 'U';
@@ -68,7 +68,7 @@ const ChatContainer: React.FC = () => {
             {useTestWebhook ? 'Using Test Webhook' : 'Using Production Webhook'}
           </Label>
         </div>
-        {/* Right side: Show Payload Button (Chat ID removed) */}
+        {/* Right side: Show Payload Button */}
         <Button
           variant="outline"
           size="sm"
@@ -85,7 +85,6 @@ const ChatContainer: React.FC = () => {
       <div className="flex-grow overflow-y-auto p-4 bg-muted/20">
         {messages.length === 0 && !loading ? (
            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-             {/* Placeholder while waiting for welcome message */}
              <p className="text-center">Starting your session...</p>
            </div>
         ) : messages.length === 0 && loading ? (
@@ -103,7 +102,7 @@ const ChatContainer: React.FC = () => {
           ))
         )}
 
-        {/* Loading indicator when assistant is typing */}
+        {/* Loading indicator */}
         {loading && messages.length > 0 && (
           <div className="flex items-center space-x-2 text-muted-foreground my-4 pl-12">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -111,7 +110,6 @@ const ChatContainer: React.FC = () => {
           </div>
         )}
 
-        {/* Scroll anchor: This empty div is the target for scrollIntoView */}
         <div ref={messagesEndRef} />
       </div>
 

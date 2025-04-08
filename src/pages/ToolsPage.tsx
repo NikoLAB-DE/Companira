@@ -1,84 +1,112 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Mic, BookOpen, Calendar, PenTool } from 'lucide-react';
+import { Button } from '../components/ui/button'; // Import Button
+import { PenTool, Pin, ListChecks, MapPin, Maximize2, Minimize2 } from 'lucide-react'; // Import new icons
+
+interface Tool {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  iconColor: string;
+  contentPlaceholder: string;
+}
+
+const toolsData: Tool[] = [
+  { 
+    id: 'journaling', 
+    title: 'Guided Journaling', 
+    description: 'Structured prompts to help you reflect', 
+    icon: PenTool, 
+    iconColor: 'text-blue-600', 
+    contentPlaceholder: 'Journaling prompts coming soon' 
+  },
+  { 
+    id: 'pinned', 
+    title: 'Pinned conversations', // Updated title
+    description: 'Quick access to important chats', // Updated description
+    icon: Pin, // Updated icon
+    iconColor: 'text-green-600', 
+    contentPlaceholder: 'Pinned conversations feature coming soon' 
+  },
+  { 
+    id: 'todo', 
+    title: 'To-Do-How-To', // Updated title
+    description: 'Manage tasks and get guidance', // Updated description
+    icon: ListChecks, // Updated icon
+    iconColor: 'text-purple-600', 
+    contentPlaceholder: 'To-Do list and guides coming soon' 
+  },
+  { 
+    id: 'findHelp', 
+    title: 'Find support, activities in your area', // Updated title
+    description: 'Local resources and community connections', // Updated description
+    icon: MapPin, // Updated icon
+    iconColor: 'text-red-600', 
+    contentPlaceholder: 'Local resource finder coming soon' 
+  },
+];
 
 const ToolsPage: React.FC = () => {
+  const [maximizedCardId, setMaximizedCardId] = useState<string | null>(null);
+
+  const handleMaximize = (id: string) => {
+    setMaximizedCardId(id);
+  };
+
+  const handleMinimize = () => {
+    setMaximizedCardId(null);
+  };
+
+  const cardsToDisplay = maximizedCardId 
+    ? toolsData.filter(tool => tool.id === maximizedCardId) 
+    : toolsData;
+
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-6">Tools & Exercises</h1>
-      <p className="text-gray-600 mb-8">
-        Explore additional tools and exercises to support your mental wellbeing.
-        These features are coming soon.
-      </p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <PenTool className="h-5 w-5 mr-2 text-blue-600" />
-              Guided Journaling
-            </CardTitle>
-            <CardDescription>
-              Structured prompts to help you reflect
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="h-48 flex items-center justify-center bg-gray-50 rounded-b-lg">
-            <p className="text-gray-500 text-center">
-              Journaling prompts coming soon
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Mic className="h-5 w-5 mr-2 text-green-600" />
-              Voice Conversations
-            </CardTitle>
-            <CardDescription>
-              Speak with your assistant using voice
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="h-48 flex items-center justify-center bg-gray-50 rounded-b-lg">
-            <p className="text-gray-500 text-center">
-              Voice input/output coming soon
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calendar className="h-5 w-5 mr-2 text-purple-600" />
-              Daily Check-ins
-            </CardTitle>
-            <CardDescription>
-              Quick daily mood and progress tracking
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="h-48 flex items-center justify-center bg-gray-50 rounded-b-lg">
-            <p className="text-gray-500 text-center">
-              Daily check-in system coming soon
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <BookOpen className="h-5 w-5 mr-2 text-red-600" />
-              Resource Library
-            </CardTitle>
-            <CardDescription>
-              Curated resources for mental wellbeing
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="h-48 flex items-center justify-center bg-gray-50 rounded-b-lg">
-            <p className="text-gray-500 text-center">
-              Resource library coming soon
-            </p>
-          </CardContent>
-        </Card>
+      {!maximizedCardId && (
+         <p className="text-gray-600 mb-8">
+           Explore additional tools and exercises to support your mental wellbeing.
+           These features are coming soon. Click the expand icon to focus on a tool.
+         </p>
+      )}
+     
+      <div className={`grid gap-6 ${maximizedCardId ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+        {cardsToDisplay.map((tool) => (
+          <Card key={tool.id} className={maximizedCardId ? 'transition-all duration-300 ease-in-out' : ''}>
+            <CardHeader className="flex flex-row items-start justify-between">
+              <div>
+                <CardTitle className="flex items-center mb-1">
+                  <tool.icon className={`h-5 w-5 mr-2 ${tool.iconColor}`} />
+                  {tool.title}
+                </CardTitle>
+                <CardDescription>
+                  {tool.description}
+                </CardDescription>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => maximizedCardId ? handleMinimize() : handleMaximize(tool.id)}
+                aria-label={maximizedCardId ? 'Minimize tool' : 'Maximize tool'}
+              >
+                {maximizedCardId ? (
+                  <Minimize2 className="h-5 w-5" />
+                ) : (
+                  <Maximize2 className="h-5 w-5" />
+                )}
+              </Button>
+            </CardHeader>
+            <CardContent className={`flex items-center justify-center bg-gray-50 rounded-b-lg ${maximizedCardId ? 'min-h-[60vh]' : 'h-48'}`}>
+              {/* Placeholder for actual tool content */}
+              <p className="text-gray-500 text-center p-4"> 
+                {tool.contentPlaceholder}
+                {maximizedCardId && <span className="block mt-4 text-sm">(Full tool interface will appear here)</span>}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );

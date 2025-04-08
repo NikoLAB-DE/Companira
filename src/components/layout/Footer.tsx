@@ -3,27 +3,28 @@ import { Heart } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-card border-t border-border py-6 mt-auto"> {/* Changed mt-8 to mt-auto to push footer down */}
+    <footer className="bg-card border-t border-border py-3 mt-auto"> {/* Reduced py-6 to py-3 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center mb-4 md:mb-0">
+        <div className="flex flex-col md:flex-row justify-between items-center text-xs"> {/* Reduced text size to text-xs */}
+          <div className="flex items-center mb-2 md:mb-0"> {/* Reduced mb-4 to mb-2 */}
             <span className="text-muted-foreground">© {new Date().getFullYear()} Companira</span>
           </div>
 
-          <div className="flex items-center text-muted-foreground text-sm">
+          <div className="flex items-center text-muted-foreground mb-2 md:mb-0"> {/* Added mb-2 for spacing on mobile */}
             <span className="flex items-center">
-              Made with <Heart className="h-4 w-4 mx-1 text-destructive" /> for mental wellbeing
+              Made with <Heart className="h-3 w-3 mx-1 text-destructive" /> {/* Reduced icon size */}
+              for mental wellbeing
             </span>
           </div>
 
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="text-primary hover:underline text-sm">
+          <div className="flex space-x-4"> {/* Reduced space-x-6 to space-x-4 */}
+            <a href="#" className="text-primary hover:underline"> {/* Removed text-sm */}
               Privacy
             </a>
-            <a href="#" className="text-primary hover:underline text-sm">
+            <a href="#" className="text-primary hover:underline"> {/* Removed text-sm */}
               Terms
             </a>
-            <a href="#" className="text-primary hover:underline text-sm">
+            <a href="#" className="text-primary hover:underline"> {/* Removed text-sm */}
               Contact
             </a>
           </div>

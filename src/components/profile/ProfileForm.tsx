@@ -15,46 +15,35 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Profile } from '../../types';
 import { useProfile } from '../../contexts/ProfileContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react'; // Import Trash2 icon
 
-// Updated Zod schema (email is still here for form validation, but won't be saved to DB)
-// No changes needed here as the fields are already strings
+// --- Schema, Options, Helpers (No changes needed here) ---
 const profileSchema = z.object({
-  // Basic Identity
   nickname: z.string().min(1, 'Nickname is required'),
-  email: z.string().email('Invalid email address'), // Keep for display/validation
+  email: z.string().email('Invalid email address'), 
   telegram_handle: z.string().optional().or(z.literal('')),
   language: z.enum(['EN', 'DE', 'UK']),
-
-  // Life Context
   current_situation: z.string().optional().or(z.literal('')),
   focused_problem: z.string().optional().or(z.literal('')),
   top_goals: z.array(z.string()).optional(),
   other_goal: z.string().optional().or(z.literal('')),
-
-  // Assistant Setup
   assistant_name: z.string().optional().or(z.literal('')),
-  persona: z.string().optional().or(z.literal('')), // Will store full description or value
-  tone: z.string().optional().or(z.literal('')), // Will store full description or value
+  persona: z.string().optional().or(z.literal('')), 
+  tone: z.string().optional().or(z.literal('')), 
   gender: z.enum(['male', 'female']).optional(),
   response_length: z.enum(['short', 'medium', 'long']).optional(),
-  content_style: z.string().optional().or(z.literal('')), // Will store full description or value
-
-  // Reminders
+  content_style: z.string().optional().or(z.literal('')), 
   reminders_enabled: z.boolean().optional(),
   reminder_type: z.string().optional().or(z.literal('')),
   reminder_frequency: z.string().optional().or(z.literal('')),
   reminder_channel: z.string().optional().or(z.literal('')),
   reminder_time: z.string().optional().or(z.literal('')),
-
-  // Additional
   avoid_topics: z.array(z.string()).optional(),
   other_avoid_topic: z.string().optional().or(z.literal('')),
   preferred_response_style: z.string().optional().or(z.literal('')),
   emoji_preference: z.enum(['none', 'less', 'more']).optional(),
 });
 
-// Define dropdown options (keep existing ones)
 const personaOptions = [
   { value: 'kind_friend', label: 'Kind Friend', description: 'Gentle, emotionally present, easygoing' },
   { value: 'wise_mentor', label: 'Wise Mentor', description: 'Calm and mature, speaks from experience' },
@@ -82,36 +71,37 @@ const contentStyleOptions = [
   { value: 'detailed', label: 'Detailed', description: 'Rich, structured responses' },
 ];
 
-// Helper function to get full description string from a value
 const getFullDescription = (
     value: string | undefined,
     options: { value: string; label: string; description: string }[]
 ): string | undefined => {
     if (!value) return undefined;
     const selectedOption = options.find(option => option.value === value);
-    // Return the constructed string or the original value if not found (handles empty selection)
     return selectedOption ? `${selectedOption.label} – ${selectedOption.description}` : value;
 };
 
-// Helper function to get the 'value' part from a full description string or return original if not a description
 const getValueFromDescription = (
-    descriptionString: string | undefined | null, // Allow null from DB
+    descriptionString: string | undefined | null, 
     options: { value: string; label: string; description: string }[]
 ): string | undefined => {
     if (!descriptionString) return undefined;
     const foundOption = options.find(option => `${option.label} – ${option.description}` === descriptionString);
-    // Return the value if found, otherwise return the original string (it might be a value already or empty)
     return foundOption ? foundOption.value : descriptionString;
 };
+// --- End Schema, Options, Helpers ---
 
 
-const ProfileForm: React.FC = () => {
+// Add onOpenDeleteDialog prop
+interface ProfileFormProps {
+  onOpenDeleteDialog: () => void;
+}
+
+const ProfileForm: React.FC<ProfileFormProps> = ({ onOpenDeleteDialog }) => {
   const { profile, loading, error, saveProfileToSupabase } = useProfile();
   const { user } = useAuth();
 
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<Profile>({
     resolver: zodResolver(profileSchema),
-    // Initialize with empty strings or default values that match the 'value' part
     defaultValues: {
       nickname: '',
       email: '',
@@ -125,9 +115,9 @@ const ProfileForm: React.FC = () => {
       avoid_topics: [],
       other_avoid_topic: '',
       emoji_preference: 'less',
-      persona: '', // Store the 'value' initially
-      tone: '', // Store the 'value' initially
-      content_style: '', // Store the 'value' initially
+      persona: '', 
+      tone: '', 
+      content_style: '', 
       current_situation: '',
       focused_problem: '',
       telegram_handle: '',
@@ -139,11 +129,8 @@ const ProfileForm: React.FC = () => {
     },
   });
 
-
-  // Effect to reset form with profile data
+  // Effect to reset form with profile data (no changes needed)
   useEffect(() => {
-    // When loading profile data from context (which might have full descriptions),
-    // convert them back to the corresponding 'value' for the Select components.
     const personaValue = getValueFromDescription(profile?.persona, personaOptions);
     const toneValue = getValueFromDescription(profile?.tone, toneOptions);
     const contentStyleValue = getValueFromDescription(profile?.content_style, contentStyleOptions);
@@ -161,9 +148,9 @@ const ProfileForm: React.FC = () => {
       avoid_topics: profile?.avoid_topics || [],
       other_avoid_topic: profile?.other_avoid_topic || '',
       emoji_preference: profile?.emoji_preference || 'less',
-      persona: personaValue || '', // Use the extracted value or empty string
-      tone: toneValue || '', // Use the extracted value or empty string
-      content_style: contentStyleValue || '', // Use the extracted value or empty string
+      persona: personaValue || '', 
+      tone: toneValue || '', 
+      content_style: contentStyleValue || '', 
       current_situation: profile?.current_situation || '',
       focused_problem: profile?.focused_problem || '',
       telegram_handle: profile?.telegram_handle || '',
@@ -176,8 +163,7 @@ const ProfileForm: React.FC = () => {
     reset(defaultValues);
   }, [profile, user, reset]);
 
-
-  // Watch the 'value' fields from the form state for Select components
+  // Watchers (no changes needed)
   const selectedPersonaValue = watch('persona');
   const selectedToneValue = watch('tone');
   const selectedContentStyleValue = watch('content_style');
@@ -185,42 +171,27 @@ const ProfileForm: React.FC = () => {
   const selectedEmojiPreference = watch('emoji_preference');
   const remindersEnabled = watch('reminders_enabled');
 
-
+  // onSubmit (no changes needed)
   const onSubmit = async (data: Profile) => {
     if (!user) {
       console.error("User not logged in, cannot save profile.");
       return;
     }
-
-    // --- Modification Start ---
-    // Get the full descriptive text for selected options based on the 'value' from the form data
     const fullPersona = getFullDescription(data.persona, personaOptions);
     const fullTone = getFullDescription(data.tone, toneOptions);
     const fullContentStyle = getFullDescription(data.content_style, contentStyleOptions);
-
-    // Prepare data for saving: exclude email, ensure user_id, use full descriptions
     const dataToSave = {
       ...data,
-      user_id: user.id, // Ensure user_id is set
-      // Use the full description string if found, otherwise keep the original value (which might be empty string or the value itself if lookup failed)
+      user_id: user.id, 
       persona: fullPersona,
       tone: fullTone,
       content_style: fullContentStyle,
     };
-    // --- Modification End ---
-
-
-    // Remove email explicitly just to be absolutely sure, though type checking helps
     delete (dataToSave as any).email;
-
-    // Ensure gender is valid before saving
     if (dataToSave.gender !== 'male' && dataToSave.gender !== 'female') {
         dataToSave.gender = undefined;
     }
-
-    console.log("Data being sent to saveProfileToSupabase:", dataToSave); // Log data before saving
-
-    // Call the Supabase save function with the modified data
+    console.log("Data being sent to saveProfileToSupabase:", dataToSave); 
     await saveProfileToSupabase(dataToSave);
   };
 
@@ -237,7 +208,6 @@ const ProfileForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Tabs defaultValue="identity" className="w-full">
-        {/* TabsList remains the same */}
         <div className="mb-4 overflow-x-auto">
           <TabsList className="flex flex-wrap w-full">
             <TabsTrigger value="identity" className="flex-grow min-w-[100px] text-center">Identity</TabsTrigger>
@@ -248,7 +218,7 @@ const ProfileForm: React.FC = () => {
           </TabsList>
         </div>
 
-        {/* Identity Tab Content remains the same */}
+        {/* Identity Tab Content */}
         <TabsContent value="identity">
           <Card>
             <CardHeader>
@@ -261,49 +231,25 @@ const ProfileForm: React.FC = () => {
               {/* Nickname */}
               <div className="space-y-2">
                 <Label htmlFor="nickname">Nickname</Label>
-                <Input
-                  id="nickname"
-                  {...register('nickname')}
-                  placeholder="How should we call you?"
-                />
-                {errors.nickname && (
-                  <p className="text-sm text-red-500">{errors.nickname.message}</p>
-                )}
+                <Input id="nickname" {...register('nickname')} placeholder="How should we call you?" />
+                {errors.nickname && <p className="text-sm text-red-500">{errors.nickname.message}</p>}
               </div>
               {/* Email (Read Only) */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...register('email')}
-                  placeholder="Your email address"
-                  readOnly
-                  className="bg-muted/50 cursor-not-allowed"
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email.message}</p>
-                )}
+                <Input id="email" type="email" {...register('email')} placeholder="Your email address" readOnly className="bg-muted/50 cursor-not-allowed" />
+                {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
               </div>
               {/* Telegram */}
               <div className="space-y-2">
                 <Label htmlFor="telegram_handle">Telegram Handle (Optional)</Label>
-                <Input
-                  id="telegram_handle"
-                  {...register('telegram_handle')}
-                  placeholder="@yourusername"
-                />
+                <Input id="telegram_handle" {...register('telegram_handle')} placeholder="@yourusername" />
               </div>
               {/* Language */}
               <div className="space-y-2">
                 <Label htmlFor="language">Preferred Language</Label>
-                <Select
-                  value={watch('language')}
-                  onValueChange={(value) => setValue('language', value as 'EN' | 'DE' | 'UK')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
+                <Select value={watch('language')} onValueChange={(value) => setValue('language', value as 'EN' | 'DE' | 'UK')}>
+                  <SelectTrigger><SelectValue placeholder="Select language" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="EN">English</SelectItem>
                     <SelectItem value="DE">German</SelectItem>
@@ -311,11 +257,29 @@ const ProfileForm: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* --- Delete Account Section --- */}
+              <div className="pt-6 mt-6 border-t border-destructive/50">
+                 <h3 className="text-lg font-semibold text-destructive mb-2">Danger Zone</h3>
+                 <p className="text-sm text-muted-foreground mb-4">
+                    Deleting your account is permanent and cannot be undone. All your profile data, chat history, and other associated information will be permanently removed.
+                 </p>
+                 <Button
+                   type="button" // Important: Prevent form submission
+                   variant="destructive"
+                   onClick={onOpenDeleteDialog} // Call the handler passed from ProfilePage
+                   className="w-full sm:w-auto"
+                 >
+                   <Trash2 className="mr-2 h-4 w-4" /> Delete My Account
+                 </Button>
+              </div>
+              {/* --- End Delete Account Section --- */}
+
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Context Tab Content remains the same */}
+        {/* Context Tab Content (No changes) */}
         <TabsContent value="context">
           <Card>
             <CardHeader>
@@ -387,7 +351,7 @@ const ProfileForm: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Assistant Setup Tab Content - Select components now use the watched 'value' */}
+        {/* Assistant Setup Tab Content (No changes) */}
         <TabsContent value="assistant">
           <Card>
             <CardHeader>
@@ -402,13 +366,10 @@ const ProfileForm: React.FC = () => {
                 <Label htmlFor="persona">Assistant Persona</Label>
                  <p className="text-sm text-muted-foreground">🎭 "Who" the assistant is. Defines role, experience, and style.</p>
                 <Select
-                  // Bind the Select's value to the form state's 'persona' field (which holds the 'value')
                   value={selectedPersonaValue}
-                  // When changed, update the form state's 'persona' field with the new 'value'
-                  onValueChange={(value) => setValue('persona', value, { shouldValidate: true })} // Trigger validation on change
+                  onValueChange={(value) => setValue('persona', value, { shouldValidate: true })} 
                 >
                   <SelectTrigger id="persona">
-                    {/* Display the label corresponding to the selected value */}
                     <SelectValue placeholder="Select a persona...">
                       {personaOptions.find(o => o.value === selectedPersonaValue)?.label || "Select a persona..."}
                     </SelectValue>
@@ -421,7 +382,6 @@ const ProfileForm: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                 {/* Display Zod error if any */}
                  {errors.persona && (
                     <p className="text-sm text-red-500">{errors.persona.message}</p>
                   )}
@@ -540,7 +500,7 @@ const ProfileForm: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Reminders Tab Content remains the same */}
+        {/* Reminders Tab Content (No changes) */}
         <TabsContent value="reminders">
           <Card>
             <CardHeader>
@@ -624,7 +584,7 @@ const ProfileForm: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Additional Tab Content remains the same */}
+        {/* Additional Tab Content (No changes) */}
         <TabsContent value="additional">
           <Card>
             <CardHeader>
@@ -722,13 +682,8 @@ const ProfileForm: React.FC = () => {
       <div className="flex justify-end mt-6">
         <Button type="submit" disabled={loading}>
           {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save Profile'
-          )}
+            <> <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving... </>
+          ) : ( 'Save Profile' )}
         </Button>
       </div>
     </form>

@@ -9,6 +9,7 @@ import { useChat } from '@/contexts/ChatContext'; // Import useChat
 interface ContentPanelProps {
   topicId: string | null;
   topicTitle: string | null;
+  // Removed onInjectTopic prop, will use useChat directly
 }
 
 const ContentPanel: React.FC<ContentPanelProps> = ({ topicId, topicTitle }) => {
@@ -67,25 +68,19 @@ const ContentPanel: React.FC<ContentPanelProps> = ({ topicId, topicTitle }) => {
   }, [topicId, topicTitle]); // Rerun effect when topicId or topicTitle changes
 
   const handleInject = () => {
-    if (topicId && topicTitle) { // Allow injection even if markdown is null/empty
+    if (topicId && topicTitle && markdown) {
       // Construct a message to send to the chat
-      const baseMessage = `Let's talk about "${topicTitle}".`;
-      const snippet = markdown ? ` Here's some initial information:\n\n${markdown.substring(0, 300)}${markdown.length > 300 ? '...' : ''}` : '';
-      const messageContent = baseMessage + snippet;
-
+      const messageContent = `Let's talk about "${topicTitle}". Here's some initial information:\n\n${markdown.substring(0, 300)}${markdown.length > 300 ? '...' : ''}`; // Send title and snippet
       console.log('Injecting topic to chat:', { topicId, topicTitle });
       sendMessage(messageContent, 'user'); // Send as a user message
       // Optionally navigate to the chat page or open a chat modal
     } else {
-      console.warn('Cannot inject topic: Missing ID or title.');
+      console.warn('Cannot inject topic: Missing ID, title, or content.');
     }
   };
 
-  // Define base class for the container
-  const containerBaseClass = "p-6 md:p-8 h-full"; // Ensure padding doesn't prevent full height usage if needed
-
   return (
-    <div className={containerBaseClass}> {/* Use base class */}
+    <div className="p-6 md:p-8 h-full overflow-y-auto">
       {loading && (
         <div className="flex items-center justify-center h-full">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -97,48 +92,39 @@ const ContentPanel: React.FC<ContentPanelProps> = ({ topicId, topicTitle }) => {
            <AlertCircle className="h-12 w-12 text-destructive mb-4" />
            <p className="text-lg font-semibold text-destructive">Error Loading Content</p>
            <p className="text-muted-foreground mt-1">{error}</p>
-           {/* Add inject button even on error */}
-           <div className="mt-6">
-             <Button onClick={handleInject} disabled={!topicId || !topicTitle}>
-               Ask Companion about "{topicTitle}"
-             </Button>
-           </div>
         </div>
       )}
-      {!loading && !error && !topicId && ( // Initial state: No topic selected
+      {!loading && !error && !markdown && !topicId && (
          <div className="flex flex-col items-center justify-center h-full text-center">
            <Info className="h-12 w-12 text-muted-foreground mb-4" />
            <p className="text-lg font-semibold">Select a Topic</p>
            <p className="text-muted-foreground mt-1">Choose a life situation from the sidebar to view details.</p>
          </div>
       )}
-      {!loading && !error && topicId && ( // Topic selected, content might be loading or loaded
-        <>
-          {markdown ? ( // Content successfully loaded
-            <article className="prose prose-zinc dark:prose-invert max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
-              <hr className="my-6" />
-              <div className="mt-6 flex justify-end">
-                <Button onClick={handleInject} disabled={!topicId || !topicTitle}>
-                  Talk to Companion about "{topicTitle}"
-                </Button>
-              </div>
-            </article>
-          ) : ( // Topic selected, but no markdown content (either not found or empty)
-             !loading && ( // Ensure loading is finished before showing this state
-               <div className="flex flex-col items-center justify-center h-full text-center">
-                 <Info className="h-12 w-12 text-muted-foreground mb-4" />
-                 <p className="text-lg font-semibold">No Content Yet</p>
-                 <p className="text-muted-foreground mt-1">Content for "{topicTitle}" hasn't been added, but you can still discuss it.</p>
-                 <div className="mt-6">
-                   <Button onClick={handleInject} disabled={!topicId || !topicTitle}>
-                     Ask Companion about "{topicTitle}"
-                   </Button>
-                 </div>
-               </div>
-             )
-          )}
-        </>
+      {!loading && !error && markdown && topicId && (
+        <article className="prose prose-zinc dark:prose-invert max-w-none">
+          {/* Using ReactMarkdown to render the fetched content */}
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
+          <hr className="my-6" />
+          <div className="mt-6 flex justify-end">
+            <Button onClick={handleInject} disabled={!topicId || !topicTitle}>
+              Talk to Companion about "{topicTitle}"
+            </Button>
+          </div>
+        </article>
+      )}
+       {!loading && !error && !markdown && topicId && (
+         <div className="flex flex-col items-center justify-center h-full text-center">
+           <Info className="h-12 w-12 text-muted-foreground mb-4" />
+           <p className="text-lg font-semibold">No Content Yet</p>
+           <p className="text-muted-foreground mt-1">Content for "{topicTitle}" hasn't been added.</p>
+           {/* Optionally add the inject button even if content is missing */}
+           {/* <div className="mt-6">
+             <Button onClick={handleInject} disabled={!topicId || !topicTitle}>
+               Ask Companion about "{topicTitle}"
+             </Button>
+           </div> */}
+         </div>
       )}
     </div>
   );

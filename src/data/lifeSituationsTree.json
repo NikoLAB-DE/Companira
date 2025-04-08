@@ -5,53 +5,724 @@
     "children": [
       {
         "id": "1.1",
-        "title": "Alcohol",
+        "title": "Alcohol Addiction",
         "children": [
           { "id": "1.1.1", "title": "Diagnosis" },
-          { "id": "1.1.2", "title": "Therapy" }
+          { "id": "1.1.2", "title": "Therapy Options" },
+          { "id": "1.1.3", "title": "Withdrawal & Detox" },
+          { "id": "1.1.4", "title": "Coping Strategies" },
+          { "id": "1.1.5", "title": "Supporting a Loved One" }
         ]
       },
       {
         "id": "1.2",
-        "title": "Drugs",
+        "title": "Drug Use (Cannabis, Opioids, etc.)",
         "children": [
-          { "id": "1.2.1", "title": "Therapy" }
+          { "id": "1.2.1", "title": "Diagnosis" },
+          { "id": "1.2.2", "title": "Treatment Programs" },
+          { "id": "1.2.3", "title": "Withdrawal & Detox" },
+          { "id": "1.2.4", "title": "Coping Strategies" },
+          { "id": "1.2.5", "title": "Supporting a Loved One" }
+        ]
+      },
+      {
+        "id": "1.3",
+        "title": "Gambling Addiction",
+        "children": [
+          { "id": "1.3.1", "title": "Signs & Diagnosis" },
+          { "id": "1.3.2", "title": "Behavioral Therapy" },
+          { "id": "1.3.3", "title": "Financial Recovery" },
+          { "id": "1.3.4", "title": "Relapse Prevention" }
+        ]
+      },
+      {
+        "id": "1.4",
+        "title": "Gaming and Internet Addiction",
+        "children": [
+          { "id": "1.4.1", "title": "Screen Time Awareness" },
+          { "id": "1.4.2", "title": "Behavioral Patterns" },
+          { "id": "1.4.3", "title": "Digital Detox Tips" },
+          { "id": "1.4.4", "title": "Youth & Gaming" }
+        ]
+      },
+      {
+        "id": "1.5",
+        "title": "Pornography Addiction",
+        "children": [
+          { "id": "1.5.1", "title": "Understanding the Cycle" },
+          { "id": "1.5.2", "title": "Impacts on Relationships" },
+          { "id": "1.5.3", "title": "Therapy & Support" },
+          { "id": "1.5.4", "title": "Maintaining Boundaries" }
         ]
       }
     ]
   },
   {
     "id": "2",
-    "title": "Relationships",
+    "title": "Anxiety Disorders",
     "children": [
       {
         "id": "2.1",
-        "title": "Breakups",
-        "children": []
+        "title": "Generalized Anxiety",
+        "children": [
+          { "id": "2.1.1", "title": "Everyday Triggers" },
+          { "id": "2.1.2", "title": "Cognitive Approaches" },
+          { "id": "2.1.3", "title": "Relaxation Methods" }
+        ]
       },
       {
         "id": "2.2",
-        "title": "Conflict Resolution",
-        "children": []
+        "title": "Social Anxiety",
+        "children": [
+          { "id": "2.2.1", "title": "Symptoms & Patterns" },
+          { "id": "2.2.2", "title": "Exposure Therapy" },
+          { "id": "2.2.3", "title": "Public Speaking Tips" }
+        ]
+      },
+      {
+        "id": "2.3",
+        "title": "Panic Attacks",
+        "children": [
+          { "id": "2.3.1", "title": "Physical Symptoms" },
+          { "id": "2.3.2", "title": "Breathing Techniques" },
+          { "id": "2.3.3", "title": "Medication Overview" }
+        ]
+      },
+      {
+        "id": "2.4",
+        "title": "Phobias (e.g., fear of flying)",
+        "children": [
+          { "id": "2.4.1", "title": "Specific Phobias" },
+          { "id": "2.4.2", "title": "Exposure & Desensitization" },
+          { "id": "2.4.3", "title": "Professional Help" }
+        ]
+      },
+      {
+        "id": "2.5",
+        "title": "Health Anxiety (Hypochondria)",
+        "children": [
+          { "id": "2.5.1", "title": "Reassurance-Seeking" },
+          { "id": "2.5.2", "title": "Limiting Dr. Google" },
+          { "id": "2.5.3", "title": "CBT Approaches" }
+        ]
       }
     ]
   },
   {
     "id": "3",
-    "title": "Mental Health",
+    "title": "Mood Disorders",
     "children": [
       {
         "id": "3.1",
-        "title": "Anxiety",
+        "title": "Depression",
         "children": [
-           { "id": "3.1.1", "title": "Symptoms" },
-           { "id": "3.1.2", "title": "Management" }
+          { "id": "3.1.1", "title": "Signs & Symptoms" },
+          { "id": "3.1.2", "title": "Therapeutic Approaches" },
+          { "id": "3.1.3", "title": "Lifestyle Changes" }
         ]
       },
       {
         "id": "3.2",
-        "title": "Depression",
-        "children": []
+        "title": "Bipolar Disorder",
+        "children": [
+          { "id": "3.2.1", "title": "Mania vs. Depression" },
+          { "id": "3.2.2", "title": "Medication & Therapy" },
+          { "id": "3.2.3", "title": "Stability & Relapse" }
+        ]
+      },
+      {
+        "id": "3.3",
+        "title": "Seasonal Affective Disorder (SAD)",
+        "children": [
+          { "id": "3.3.1", "title": "Light Therapy" },
+          { "id": "3.3.2", "title": "Lifestyle Adjustments" },
+          { "id": "3.3.3", "title": "Long-Term Management" }
+        ]
+      },
+      {
+        "id": "3.4",
+        "title": "Atypical Depression",
+        "children": [
+          { "id": "3.4.1", "title": "Mood Reactivity" },
+          { "id": "3.4.2", "title": "Sleeping & Eating Patterns" },
+          { "id": "3.4.3", "title": "Psychotherapy Options" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "title": "Trauma & Stress-Related Disorders",
+    "children": [
+      {
+        "id": "4.1",
+        "title": "Post-Traumatic Stress Disorder (PTSD)",
+        "children": [
+          { "id": "4.1.1", "title": "Flashbacks & Nightmares" },
+          { "id": "4.1.2", "title": "EMDR Therapy" },
+          { "id": "4.1.3", "title": "Managing Triggers" }
+        ]
+      },
+      {
+        "id": "4.2",
+        "title": "Childhood Trauma",
+        "children": [
+          { "id": "4.2.1", "title": "Adverse Childhood Experiences (ACE)" },
+          { "id": "4.2.2", "title": "Inner Child Work" },
+          { "id": "4.2.3", "title": "Family Dynamics" }
+        ]
+      },
+      {
+        "id": "4.3",
+        "title": "Complex PTSD (C-PTSD)",
+        "children": [
+          { "id": "4.3.1", "title": "Chronic Trauma Effects" },
+          { "id": "4.3.2", "title": "Self-Regulation Techniques" },
+          { "id": "4.3.3", "title": "Long-Term Recovery" }
+        ]
+      },
+      {
+        "id": "4.4",
+        "title": "Abuse Recovery (Emotional, Physical)",
+        "children": [
+          { "id": "4.4.1", "title": "Identifying Abuse" },
+          { "id": "4.4.2", "title": "Safety Planning" },
+          { "id": "4.4.3", "title": "Rebuilding Self-Worth" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5",
+    "title": "Relationship Issues",
+    "children": [
+      {
+        "id": "5.1",
+        "title": "Romantic Relationships",
+        "children": [
+          { "id": "5.1.1", "title": "Communication Skills" },
+          { "id": "5.1.2", "title": "Conflict Resolution" },
+          { "id": "5.1.3", "title": "Building Intimacy" }
+        ]
+      },
+      {
+        "id": "5.2",
+        "title": "Family Conflicts",
+        "children": [
+          { "id": "5.2.1", "title": "Sibling Rivalry" },
+          { "id": "5.2.2", "title": "Parent-Child Relations" },
+          { "id": "5.2.3", "title": "Generational Gaps" }
+        ]
+      },
+      {
+        "id": "5.3",
+        "title": "Friendship Challenges",
+        "children": [
+          { "id": "5.3.1", "title": "Setting Boundaries" },
+          { "id": "5.3.2", "title": "Ending Toxic Friendships" },
+          { "id": "5.3.3", "title": "Making New Friends" }
+        ]
+      },
+      {
+        "id": "5.4",
+        "title": "Divorce & Breakups",
+        "children": [
+          { "id": "5.4.1", "title": "Emotional Aftermath" },
+          { "id": "5.4.2", "title": "Co-parenting Issues" },
+          { "id": "5.4.3", "title": "Legal & Financial Tips" }
+        ]
+      },
+      {
+        "id": "5.5",
+        "title": "Boundaries & Communication",
+        "children": [
+          { "id": "5.5.1", "title": "Healthy Assertiveness" },
+          { "id": "5.5.2", "title": "Listening Skills" },
+          { "id": "5.5.3", "title": "Repairing Damaged Trust" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "6",
+    "title": "Workplace Psychology",
+    "children": [
+      {
+        "id": "6.1",
+        "title": "Burnout",
+        "children": [
+          { "id": "6.1.1", "title": "Early Signs" },
+          { "id": "6.1.2", "title": "Recovery Methods" },
+          { "id": "6.1.3", "title": "Setting Boundaries" }
+        ]
+      },
+      {
+        "id": "6.2",
+        "title": "Toxic Work Environment",
+        "children": [
+          { "id": "6.2.1", "title": "Identifying Red Flags" },
+          { "id": "6.2.2", "title": "Assertive Communication" },
+          { "id": "6.2.3", "title": "Escalation & HR" }
+        ]
+      },
+      {
+        "id": "6.3",
+        "title": "Career Dissatisfaction",
+        "children": [
+          { "id": "6.3.1", "title": "Identifying Causes" },
+          { "id": "6.3.2", "title": "Career Shift Options" },
+          { "id": "6.3.3", "title": "Work-Life Balance" }
+        ]
+      },
+      {
+        "id": "6.4",
+        "title": "Work-Life Balance",
+        "children": [
+          { "id": "6.4.1", "title": "Time Management" },
+          { "id": "6.4.2", "title": "Stress Reduction" },
+          { "id": "6.4.3", "title": "Prioritizing Personal Life" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "7",
+    "title": "Developmental Disorders",
+    "children": [
+      {
+        "id": "7.1",
+        "title": "ADHD in Adults",
+        "children": [
+          { "id": "7.1.1", "title": "Symptoms & Diagnosis" },
+          { "id": "7.1.2", "title": "Medication & Therapy" },
+          { "id": "7.1.3", "title": "Organizational Skills" }
+        ]
+      },
+      {
+        "id": "7.2",
+        "title": "Autism Spectrum (ASD)",
+        "children": [
+          { "id": "7.2.1", "title": "Diagnosis in Adulthood" },
+          { "id": "7.2.2", "title": "Social Communication" },
+          { "id": "7.2.3", "title": "Sensory Management" }
+        ]
+      },
+      {
+        "id": "7.3",
+        "title": "Learning Disabilities",
+        "children": [
+          { "id": "7.3.1", "title": "Recognizing LDs" },
+          { "id": "7.3.2", "title": "Accommodations & Tools" },
+          { "id": "7.3.3", "title": "Self-Advocacy" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "8",
+    "title": "Crisis & Emergency",
+    "children": [
+      {
+        "id": "8.1",
+        "title": "Suicidal Thoughts",
+        "children": [
+          { "id": "8.1.1", "title": "Warning Signs" },
+          { "id": "8.1.2", "title": "Intervention & Hotlines" },
+          { "id": "8.1.3", "title": "Safety Planning" }
+        ]
+      },
+      {
+        "id": "8.2",
+        "title": "Self-Harm",
+        "children": [
+          { "id": "8.2.1", "title": "Understanding Self-Injury" },
+          { "id": "8.2.2", "title": "Alternatives & Coping" },
+          { "id": "8.2.3", "title": "Professional Help" }
+        ]
+      },
+      {
+        "id": "8.3",
+        "title": "Sudden Loss or Shock",
+        "children": [
+          { "id": "8.3.1", "title": "Immediate Coping" },
+          { "id": "8.3.2", "title": "Trauma Aftermath" },
+          { "id": "8.3.3", "title": "Long-Term Healing" }
+        ]
+      },
+      {
+        "id": "8.4",
+        "title": "Crisis Planning & Safety",
+        "children": [
+          { "id": "8.4.1", "title": "Emergency Contacts" },
+          { "id": "8.4.2", "title": "Crisis Kits & Plans" },
+          { "id": "8.4.3", "title": "Support Networks" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "9",
+    "title": "Somatic Symptom Disorders",
+    "children": [
+      {
+        "id": "9.1",
+        "title": "Chronic Pain without Medical Cause",
+        "children": [
+          { "id": "9.1.1", "title": "Mind-Body Connection" },
+          { "id": "9.1.2", "title": "Pain Management Techniques" },
+          { "id": "9.1.3", "title": "Holistic Treatments" }
+        ]
+      },
+      {
+        "id": "9.2",
+        "title": "Functional Neurological Symptoms",
+        "children": [
+          { "id": "9.2.1", "title": "Conversion Disorder Overview" },
+          { "id": "9.2.2", "title": "Therapeutic Approaches" },
+          { "id": "9.2.3", "title": "Lifestyle Adjustments" }
+        ]
+      },
+      {
+        "id": "9.3",
+        "title": "Psychosomatic Reactions",
+        "children": [
+          { "id": "9.3.1", "title": "Stress & Physical Symptoms" },
+          { "id": "9.3.2", "title": "Relaxation & CBT" },
+          { "id": "9.3.3", "title": "Prevention Strategies" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "10",
+    "title": "Sleep-Wake Disorders",
+    "children": [
+      {
+        "id": "10.1",
+        "title": "Insomnia",
+        "children": [
+          { "id": "10.1.1", "title": "Causes & Symptoms" },
+          { "id": "10.1.2", "title": "Sleep Hygiene" },
+          { "id": "10.1.3", "title": "Therapeutic Options" }
+        ]
+      },
+      {
+        "id": "10.2",
+        "title": "Nightmares & Night Terrors",
+        "children": [
+          { "id": "10.2.1", "title": "Understanding Night Terrors" },
+          { "id": "10.2.2", "title": "Stress & Trauma Links" },
+          { "id": "10.2.3", "title": "Prevention & Intervention" }
+        ]
+      },
+      {
+        "id": "10.3",
+        "title": "Irregular Sleep Patterns",
+        "children": [
+          { "id": "10.3.1", "title": "Shift Work Challenges" },
+          { "id": "10.3.2", "title": "Jet Lag & Travel" },
+          { "id": "10.3.3", "title": "Regulating Circadian Rhythm" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "11",
+    "title": "Personality Disorders",
+    "children": [
+      {
+        "id": "11.1",
+        "title": "Borderline Personality Disorder (BPD)",
+        "children": [
+          { "id": "11.1.1", "title": "Emotional Dysregulation" },
+          { "id": "11.1.2", "title": "Dialectical Behavior Therapy (DBT)" },
+          { "id": "11.1.3", "title": "Relationship Instability" }
+        ]
+      },
+      {
+        "id": "11.2",
+        "title": "Narcissistic Personality Disorder",
+        "children": [
+          { "id": "11.2.1", "title": "Grandiosity & Empathy Deficits" },
+          { "id": "11.2.2", "title": "Therapeutic Options" },
+          { "id": "11.2.3", "title": "Family & Social Impact" }
+        ]
+      },
+      {
+        "id": "11.3",
+        "title": "Avoidant Personality",
+        "children": [
+          { "id": "11.3.1", "title": "Fear of Rejection" },
+          { "id": "11.3.2", "title": "Building Self-Esteem" },
+          { "id": "11.3.3", "title": "Exposure & Social Skills" }
+        ]
+      },
+      {
+        "id": "11.4",
+        "title": "Obsessive-Compulsive Personality",
+        "children": [
+          { "id": "11.4.1", "title": "Perfectionism" },
+          { "id": "11.4.2", "title": "Rigid Thinking" },
+          { "id": "11.4.3", "title": "Coping with OCPD" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "12",
+    "title": "Eating Disorders",
+    "children": [
+      {
+        "id": "12.1",
+        "title": "Anorexia Nervosa",
+        "children": [
+          { "id": "12.1.1", "title": "Causes & Risks" },
+          { "id": "12.1.2", "title": "Nutritional Rehabilitation" },
+          { "id": "12.1.3", "title": "Body Image & Self-Esteem" }
+        ]
+      },
+      {
+        "id": "12.2",
+        "title": "Bulimia",
+        "children": [
+          { "id": "12.2.1", "title": "Binge-Purge Cycle" },
+          { "id": "12.2.2", "title": "Medical Complications" },
+          { "id": "12.2.3", "title": "Therapy & Coping" }
+        ]
+      },
+      {
+        "id": "12.3",
+        "title": "Binge Eating",
+        "children": [
+          { "id": "12.3.1", "title": "Emotional Triggers" },
+          { "id": "12.3.2", "title": "Nutritional Guidelines" },
+          { "id": "12.3.3", "title": "Mindful Eating Techniques" }
+        ]
+      },
+      {
+        "id": "12.4",
+        "title": "Body Image Issues",
+        "children": [
+          { "id": "12.4.1", "title": "Societal Pressures" },
+          { "id": "12.4.2", "title": "Self-Compassion" },
+          { "id": "12.4.3", "title": "Building Positive Body Image" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "13",
+    "title": "Psychotic Disorders",
+    "children": [
+      {
+        "id": "13.1",
+        "title": "Schizophrenia",
+        "children": [
+          { "id": "13.1.1", "title": "Hallucinations & Delusions" },
+          { "id": "13.1.2", "title": "Medication Management" },
+          { "id": "13.1.3", "title": "Community Support" }
+        ]
+      },
+      {
+        "id": "13.2",
+        "title": "Psychotic Breaks / Hallucinations",
+        "children": [
+          { "id": "13.2.1", "title": "Recognizing a Crisis" },
+          { "id": "13.2.2", "title": "Intervention & Safety" },
+          { "id": "13.2.3", "title": "Stabilization" }
+        ]
+      },
+      {
+        "id": "13.3",
+        "title": "Delusions & Paranoia",
+        "children": [
+          { "id": "13.3.1", "title": "Types of Delusions" },
+          { "id": "13.3.2", "title": "Treatment & Reality Testing" },
+          { "id": "13.3.3", "title": "Caregiver Strategies" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "14",
+    "title": "Grief & Loss",
+    "children": [
+      {
+        "id": "14.1",
+        "title": "Loss of a Loved One",
+        "children": [
+          { "id": "14.1.1", "title": "Stages of Grief" },
+          { "id": "14.1.2", "title": "Support Systems" },
+          { "id": "14.1.3", "title": "Memorializing & Honoring" }
+        ]
+      },
+      {
+        "id": "14.2",
+        "title": "Loss of Identity / Purpose",
+        "children": [
+          { "id": "14.2.1", "title": "Redefining Self" },
+          { "id": "14.2.2", "title": "Therapy & Coaching" },
+          { "id": "14.2.3", "title": "Building a New Life Path" }
+        ]
+      },
+      {
+        "id": "14.3",
+        "title": "Coping with Terminal Illness",
+        "children": [
+          { "id": "14.3.1", "title": "Emotional Preparedness" },
+          { "id": "14.3.2", "title": "Palliative Care" },
+          { "id": "14.3.3", "title": "Family & Caregivers" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "15",
+    "title": "Child & Adolescent Psychology",
+    "children": [
+      {
+        "id": "15.1",
+        "title": "Teen Anxiety & Depression",
+        "children": [
+          { "id": "15.1.1", "title": "Signs & Symptoms" },
+          { "id": "15.1.2", "title": "Talking to Teens" },
+          { "id": "15.1.3", "title": "Professional Help" }
+        ]
+      },
+      {
+        "id": "15.2",
+        "title": "Bullying & Peer Pressure",
+        "children": [
+          { "id": "15.2.1", "title": "Identifying Bullying" },
+          { "id": "15.2.2", "title": "Coping Strategies" },
+          { "id": "15.2.3", "title": "School Intervention" }
+        ]
+      },
+      {
+        "id": "15.3",
+        "title": "Family Expectations & Conflict",
+        "children": [
+          { "id": "15.3.1", "title": "Parent-Child Communication" },
+          { "id": "15.3.2", "title": "Negotiating Boundaries" },
+          { "id": "15.3.3", "title": "Cultural & Generational Gaps" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "16",
+    "title": "Geriatric Psychology",
+    "children": [
+      {
+        "id": "16.1",
+        "title": "Loneliness in Older Age",
+        "children": [
+          { "id": "16.1.1", "title": "Social Isolation" },
+          { "id": "16.1.2", "title": "Community Programs" },
+          { "id": "16.1.3", "title": "Family Involvement" }
+        ]
+      },
+      {
+        "id": "16.2",
+        "title": "Cognitive Decline / Dementia",
+        "children": [
+          { "id": "16.2.1", "title": "Recognizing Signs" },
+          { "id": "16.2.2", "title": "Caregiving Strategies" },
+          { "id": "16.2.3", "title": "Memory Aids & Activities" }
+        ]
+      },
+      {
+        "id": "16.3",
+        "title": "Adjusting to Retirement",
+        "children": [
+          { "id": "16.3.1", "title": "Loss of Purpose" },
+          { "id": "16.3.2", "title": "Finding New Hobbies" },
+          { "id": "16.3.3", "title": "Financial Planning" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "17",
+    "title": "Sexual Health",
+    "children": [
+      {
+        "id": "17.1",
+        "title": "Low Libido",
+        "children": [
+          { "id": "17.1.1", "title": "Hormonal Factors" },
+          { "id": "17.1.2", "title": "Psychological Causes" },
+          { "id": "17.1.3", "title": "Couples' Approaches" }
+        ]
+      },
+      {
+        "id": "17.2",
+        "title": "Sexual Anxiety",
+        "children": [
+          { "id": "17.2.1", "title": "Performance Fears" },
+          { "id": "17.2.2", "title": "Relaxation & Techniques" },
+          { "id": "17.2.3", "title": "Professional Therapy" }
+        ]
+      },
+      {
+        "id": "17.3",
+        "title": "Sexual Orientation Exploration",
+        "children": [
+          { "id": "17.3.1", "title": "Questioning & Identity" },
+          { "id": "17.3.2", "title": "Family & Social Impact" },
+          { "id": "17.3.3", "title": "Supportive Resources" }
+        ]
+      },
+      {
+        "id": "17.4",
+        "title": "Communication About Sex",
+        "children": [
+          { "id": "17.4.1", "title": "Consent Basics" },
+          { "id": "17.4.2", "title": "Overcoming Shyness" },
+          { "id": "17.4.3", "title": "Healthy Boundaries" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "18",
+    "title": "Cultural & Identity Issues",
+    "children": [
+      {
+        "id": "18.1",
+        "title": "Immigration & Expat Challenges",
+        "children": [
+          { "id": "18.1.1", "title": "Cultural Shock" },
+          { "id": "18.1.2", "title": "Language Barriers" },
+          { "id": "18.1.3", "title": "Integration & Belonging" }
+        ]
+      },
+      {
+        "id": "18.2",
+        "title": "Gender Identity & Transition",
+        "children": [
+          { "id": "18.2.1", "title": "Questioning Gender" },
+          { "id": "18.2.2", "title": "Social & Medical Transition" },
+          { "id": "18.2.3", "title": "Family & Societal Support" }
+        ]
+      },
+      {
+        "id": "18.3",
+        "title": "Ethnic Identity & Belonging",
+        "children": [
+          { "id": "18.3.1", "title": "Navigating Discrimination" },
+          { "id": "18.3.2", "title": "Cultural Pride" },
+          { "id": "18.3.3", "title": "Intersectionality & Overlaps" }
+        ]
+      },
+      {
+        "id": "18.4",
+        "title": "Cultural Guilt / Generational Expectations",
+        "children": [
+          { "id": "18.4.1", "title": "Immigrant Family Pressures" },
+          { "id": "18.4.2", "title": "Bridging the Gap" },
+          { "id": "18.4.3", "title": "Self-Care & Independence" }
+        ]
       }
     ]
   }
