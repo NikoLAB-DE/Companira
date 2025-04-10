@@ -1,0 +1,178 @@
+[
+  {
+    "id": "1",
+    "title": "Addiction",
+    "children": [
+      { "id": "1.1", "title": "Alcohol Addiction" },
+      { "id": "1.2", "title": "Drug Use (Cannabis, Opioids, etc.)" },
+      { "id": "1.3", "title": "Gambling Addiction" },
+      { "id": "1.4", "title": "Gaming and Internet Addiction" },
+      { "id": "1.5", "title": "Pornography Addiction" }
+    ]
+  },
+  {
+    "id": "2",
+    "title": "Anxiety Disorders",
+    "children": [
+      { "id": "2.1", "title": "Generalized Anxiety" },
+      { "id": "2.2", "title": "Social Anxiety" },
+      { "id": "2.3", "title": "Panic Attacks" },
+      { "id": "2.4", "title": "Phobias (e.g., fear of flying)" },
+      { "id": "2.5", "title": "Health Anxiety (Hypochondria)" }
+    ]
+  },
+  {
+    "id": "3",
+    "title": "Mood Disorders",
+    "children": [
+      { "id": "3.1", "title": "Depression" },
+      { "id": "3.2", "title": "Bipolar Disorder" },
+      { "id": "3.3", "title": "Seasonal Affective Disorder (SAD)" },
+      { "id": "3.4", "title": "Atypical Depression" }
+    ]
+  },
+  {
+    "id": "4",
+    "title": "Trauma & Stress-Related Disorders",
+    "children": [
+      { "id": "4.1", "title": "Post-Traumatic Stress Disorder (PTSD)" },
+      { "id": "4.2", "title": "Childhood Trauma" },
+      { "id": "4.3", "title": "Complex PTSD (C-PTSD)" },
+      { "id": "4.4", "title": "Abuse Recovery (Emotional, Physical)" }
+    ]
+  },
+  {
+    "id": "5",
+    "title": "Relationship Issues",
+    "children": [
+      { "id": "5.1", "title": "Romantic Relationships" },
+      { "id": "5.2", "title": "Family Conflicts" },
+      { "id": "5.3", "title": "Friendship Challenges" },
+      { "id": "5.4", "title": "Divorce & Breakups" },
+      { "id": "5.5", "title": "Boundaries & Communication" }
+    ]
+  },
+  {
+    "id": "6",
+    "title": "Workplace Psychology",
+    "children": [
+      { "id": "6.1", "title": "Burnout" },
+      { "id": "6.2", "title": "Toxic Work Environment" },
+      { "id": "6.3", "title": "Career Dissatisfaction" },
+      { "id": "6.4", "title": "Work-Life Balance" }
+    ]
+  },
+  {
+    "id": "7",
+    "title": "Developmental Disorders",
+    "children": [
+      { "id": "7.1", "title": "ADHD in Adults" },
+      { "id": "7.2", "title": "Autism Spectrum (ASD)" },
+      { "id": "7.3", "title": "Learning Disabilities" }
+    ]
+  },
+  {
+    "id": "8",
+    "title": "Crisis & Emergency",
+    "children": [
+      { "id": "8.1", "title": "Suicidal Thoughts" },
+      { "id": "8.2", "title": "Self-Harm" },
+      { "id": "8.3", "title": "Sudden Loss or Shock" },
+      { "id": "8.4", "title": "Crisis Planning & Safety" }
+    ]
+  },
+  {
+    "id": "9",
+    "title": "Somatic Symptom Disorders",
+    "children": [
+      { "id": "9.1", "title": "Chronic Pain without Medical Cause" },
+      { "id": "9.2", "title": "Functional Neurological Symptoms" },
+      { "id": "9.3", "title": "Psychosomatic Reactions" }
+    ]
+  },
+  {
+    "id": "10",
+    "title": "Sleep-Wake Disorders",
+    "children": [
+      { "id": "10.1", "title": "Insomnia" },
+      { "id": "10.2", "title": "Nightmares & Night Terrors" },
+      { "id": "10.3", "title": "Irregular Sleep Patterns" }
+    ]
+  },
+  {
+    "id": "11",
+    "title": "Personality Disorders",
+    "children": [
+      { "id": "11.1", "title": "Borderline Personality Disorder (BPD)" },
+      { "id": "11.2", "title": "Narcissistic Personality Disorder" },
+      { "id": "11.3", "title": "Avoidant Personality" },
+      { "id": "11.4", "title": "Obsessive-Compulsive Personality" }
+    ]
+  },
+  {
+    "id": "12",
+    "title": "Eating Disorders",
+    "children": [
+      { "id": "12.1", "title": "Anorexia Nervosa" },
+      { "id": "12.2", "title": "Bulimia" },
+      { "id": "12.3", "title": "Binge Eating" },
+      { "id": "12.4", "title": "Body Image Issues" }
+    ]
+  },
+  {
+    "id": "13",
+    "title": "Psychotic Disorders",
+    "children": [
+      { "id": "13.1", "title": "Schizophrenia" },
+      { "id": "13.2", "title": "Psychotic Breaks / Hallucinations" },
+      { "id": "13.3", "title": "Delusions & Paranoia" }
+    ]
+  },
+  {
+    "id": "14",
+    "title": "Grief & Loss",
+    "children": [
+      { "id": "14.1", "title": "Loss of a Loved One" },
+      { "id": "14.2", "title": "Loss of Identity / Purpose" },
+      { "id": "14.3", "title": "Coping with Terminal Illness" }
+    ]
+  },
+  {
+    "id": "15",
+    "title": "Child & Adolescent Psychology",
+    "children": [
+      { "id": "15.1", "title": "Teen Anxiety & Depression" },
+      { "id": "15.2", "title": "Bullying & Peer Pressure" },
+      { "id": "15.3", "title": "Family Expectations & Conflict" }
+    ]
+  },
+  {
+    "id": "16",
+    "title": "Geriatric Psychology",
+    "children": [
+      { "id": "16.1", "title": "Loneliness in Older Age" },
+      { "id": "16.2", "title": "Cognitive Decline / Dementia" },
+      { "id": "16.3", "title": "Adjusting to Retirement" }
+    ]
+  },
+  {
+    "id": "17",
+    "title": "Sexual Health",
+    "children": [
+      { "id": "17.1", "title": "Low Libido" },
+      { "id": "17.2", "title": "Sexual Anxiety" },
+      { "id": "17.3", "title": "Sexual Orientation Exploration" },
+      { "id": "17.4", "title": "Communication About Sex" }
+    ]
+  },
+  {
+    "id": "18",
+    "title": "Cultural & Identity Issues",
+    "children": [
+      { "id": "18.1", "title": "Immigration & Expat Challenges" },
+      { "id": "18.2", "title": "Gender Identity & Transition" },
+      { "id": "18.3", "title": "Ethnic Identity & Belonging" },
+      { "id": "18.4", "title": "Cultural Guilt / Generational Expectations" }
+    ]
+  }
+]

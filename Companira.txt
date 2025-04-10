@@ -1,0 +1,429 @@
+{
+  "name": "Companira",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "companira-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1260,
+        -160
+      ],
+      "id": "59e35e44-4197-4b68-8173-f168df5b9d10",
+      "name": "Webhook",
+      "webhookId": "06e6509b-bf92-4e2f-88a3-485d04578401"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('AI Agent').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        876,
+        -160
+      ],
+      "id": "667dc925-812d-40e2-8e3a-0456a0b97fea",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        60,
+        -160
+      ],
+      "id": "66993eee-2db0-4891-84de-6eb2c77467d6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "tableId": "chat_messages",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.user_id }}"
+            },
+            {
+              "fieldId": "thread_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.thread_id }}"
+            },
+            {
+              "fieldId": "message",
+              "fieldValue": "={{ $('Webhook').item.json.body.message }}"
+            },
+            {
+              "fieldId": "role",
+              "fieldValue": "=user"
+            },
+            {
+              "fieldId": "embedding",
+              "fieldValue": "={{ $node[\"Create Embedding\"].json.embedding }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        -280
+      ],
+      "id": "44820f24-6794-4dd7-af95-def0d938c5bb",
+      "name": "Add Usr Msg",
+      "credentials": {
+        "supabaseApi": {
+          "id": "tl5iLRsWH1XrgtA6",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "chat_messages",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $node[\"Webhook\"].json.body.user_id }}"
+            },
+            {
+              "fieldId": "thread_id",
+              "fieldValue": "={{ $node[\"Webhook\"].json.body.thread_id }}"
+            },
+            {
+              "fieldId": "role",
+              "fieldValue": "=assistant"
+            },
+            {
+              "fieldId": "=message",
+              "fieldValue": "={{$node[\"AI Agent\"].json[\"output\"]}}"
+            },
+            {
+              "fieldId": "embedding",
+              "fieldValue": "={{ $node[\"Create Ass Embedding\"].json.embedding }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -160
+      ],
+      "id": "ed0253d4-212f-44eb-8a5a-051def6eac7c",
+      "name": "Add Ass Msg",
+      "credentials": {
+        "supabaseApi": {
+          "id": "tl5iLRsWH1XrgtA6",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        -160
+      ],
+      "id": "b75cac54-a1e1-439e-a2c4-3bad48c1312d",
+      "name": "Get Profile",
+      "credentials": {
+        "supabaseApi": {
+          "id": "tl5iLRsWH1XrgtA6",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- START MODIFIED CODE ---\n\n// Get ALL output items from the \"Find Relevant Messages\" node\n// Use $items(\"Node Name\") to get the array of all output items\nconst allMemoryOutputs = $items(\"Find Relevant Messages\");\n\n// Extract the JSON payload from each item in the output array\nconst rawMemoryItems = allMemoryOutputs.map(item => item.json);\n\n// Ensure vectorMemoryItems is always an array, even if rawMemoryItems is null or undefined (or empty)\nconst vectorMemoryItems = Array.isArray(rawMemoryItems) ? rawMemoryItems : [];\n\n// --- The rest of your memory formatting and prompt generation code follows ---\n// (Make sure the mapping logic correctly handles the structure of each object in rawMemoryItems)\n\n// Format memory from the retrieved array\nconst memory = vectorMemoryItems\n  // No extra .map needed here if rawMemoryItems already contains the message objects\n  .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)) // Optional: Sort by date if needed\n  .map(entry => {\n    const role = entry.role === 'assistant' ? 'Assistant' : 'User';\n    const messageText = entry.message || ''; // Handle cases where message might be null/undefined\n    // const similarityScore = entry.similarity !== null && entry.similarity !== undefined ? entry.similarity.toFixed(2) : 'N/A'; // Removed similarity for production\n\treturn `${role}: ${messageText}`;\n  })\n  .join('\\n');\n\n// Get the current message directly from the webhook node\nconst message = $node[\"Webhook\"].json.body.message;\n\n// Get profile data (assuming \"Get Profile\" node output is available via $items)\n// Note: $items(\"Get Profile\")[0].json accesses the first item's JSON output from Get Profile\nconst profile = $items(\"Get Profile\")[0].json;\n\n\n// --- Rest of your profile and prompt generation code remains the same ---\n// (persona, tone, nickname, content_style, avoid_topics, goals, etc.)\nconst persona = profile?.persona || \"kind_friend\";\nconst tone = profile?.tone || \"warm\";\nconst nickname = profile?.nickname || \"there\";\nconst content_style = profile?.content_style || \"practical\";\nconst avoid_topics = [].concat(profile?.avoid_topics || [], profile?.other_avoid_topic || []).filter(Boolean);\nconst goals = [].concat(profile?.top_goals || [], profile?.other_goal || []).filter(Boolean);\nconst response_length = profile?.response_length || \"medium\";\nconst preferredStyle = profile?.preferred_response_style;\nconst emojiPref = profile?.emoji_preference || \"less\";\nconst language = profile?.language || \"EN\";\n\nlet languageInstruction = `\\nIMPORTANT: You MUST respond in the user's preferred language: ${language}. Do not switch languages based on the input message or memory.`;\nlet emojiInstruction = \"\";\nswitch (emojiPref) {\n  case 'none':\n    emojiInstruction = \"\\nDo not use any emojis.\";\n    break;\n  case 'less':\n    emojiInstruction = \"\\nUse emojis sparingly and only when appropriate.\";\n    break;\n  case 'more':\n    emojiInstruction = \"\\nFeel free to use emojis more often to add personality.\";\n    break;\n}\n\nconst systemPrompt = `\nYou are a ${persona.replace(\"_\", \" \")}, ${tone} and trustworthy psychological assistant and well-being companion.\n${languageInstruction}\nSpeak to the user using their preferred tone and content style: ${content_style}.\nUser prefers response length: ${response_length}.\n${emojiInstruction}\n${preferredStyle ? `\\nAdditionally, follow this preferred response style: ${preferredStyle}` : ''}\n\nUser Profile Details:\nNickname: ${nickname}\nFocused problem: ${profile?.focused_problem || \"not specified\"}\nCurrent situation: ${profile?.current_situation || \"unknown\"}\nGoals: ${goals.join(\", \") || \"none\"}\nTopics to avoid: ${avoid_topics.join(\", \") || \"none\"}\n\nInstructions:\nMaintain psychological professionalism and empathy at all times.\nDo not make assumptions. Guide carefully based on user's tone and topic.\nUse the relevant conversation memory below (if any) to understand the context. Focus on the current user message. Don't mention user profile specifics directly, but use that knowledge implicitly. Formulate your response IN ${language}. If you ask questions, look for answers in the user's response and follow up appropriately. Greet the user only once at the very beginning of a conversation thread. Strive to be a good listener and gently encourage the user to elaborate when needed.\n\nFormatting Instructions:\n  - Structure your responses clearly using paragraphs for distinct ideas.\n  - Use Markdown for formatting:\n    - Use **bold** (\\`**bold**\\`) for emphasis or headings where appropriate. // Escape backticks\n    - Use *italics* (\\`*italics*\\`) for subtle emphasis or definitions. // Escape backticks\n    - Use bullet points (\\`- item\\`) or numbered lists (\\`1. item\\`) for lists of suggestions, steps, or key        takeaways. // Escape backticks\n    - Ensure proper spacing between paragraphs and list items for readability.\n  - Avoid overly long blocks of text; break them down logically.\n  - Your entire response MUST be valid Markdown.\n\n--- Relevant Past Messages (Memory) ---\n${memory || \"No specific past messages were found to be relevant to the current input.\"}\n--- End of Memory ---\n\nCurrent User Message:\n${message}\n`;\n\nreturn [{\n  json: {\n    prompt: systemPrompt\n  }\n}];\n\n// --- END MODIFIED CODE ---"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -180,
+        -180
+      ],
+      "id": "e5f0aa56-9b87-48b5-a459-1cd2b35f598c",
+      "name": "Instruct Prep"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://49.12.231.147:8081/embed",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"={{ $node[\"Webhook\"].json.body.message }}\" \n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -800,
+        -480
+      ],
+      "id": "526c3fea-a0e6-4678-8a28-f768c785459f",
+      "name": "Create Embedding"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://clltsokvisuguvolbsgw.supabase.co/rest/v1/rpc/match_chat_messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsbHRzb2t2aXN1Z3V2b2xic2d3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2Nzk3OTMsImV4cCI6MjA1ODI1NTc5M30.8tibjUfeSsW7HVkP9OkXP_z7I5LH6g80aWPccyunlXo"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "match_embedding",
+              "value": "={{ $node[\"Create Embedding\"].json.embedding }}"
+            },
+            {
+              "name": "=match_count",
+              "value": "5"
+            },
+            {
+              "name": "=match_threshold",
+              "value": "0.7"
+            },
+            {
+              "name": "thread_id",
+              "value": "={{ $node[\"Webhook\"].json.body.thread_id }}"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $node[\"Webhook\"].json.body.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        -140
+      ],
+      "id": "bd4ba096-cf54-412f-ab48-616e31d9316c",
+      "name": "Find Relevant Messages",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "19KKXfsekCws5jJX",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-pro-exp-03-25:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        148,
+        60
+      ],
+      "id": "a0ecaee3-9d85-4499-820c-1efa9eaec1f9",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "vQtjyfQTA5yKHV85",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://49.12.231.147:8081/embed",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        436,
+        -160
+      ],
+      "id": "608c1292-e4c9-405f-81c9-f068569d09d2",
+      "name": "Create Ass Embedding"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create Ass Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Usr Msg": {
+      "main": [
+        [
+          {
+            "node": "Find Relevant Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Ass Msg": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Profile": {
+      "main": [
+        [
+          {
+            "node": "Create Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instruct Prep": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Embedding": {
+      "main": [
+        [
+          {
+            "node": "Add Usr Msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Relevant Messages": {
+      "main": [
+        [
+          {
+            "node": "Instruct Prep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Ass Embedding": {
+      "main": [
+        [
+          {
+            "node": "Add Ass Msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v0",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "cfda0a28-7701-46a1-95f3-2560413131f6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "399abf43c540568b022ead6434ad8a5849cff209954104c294351ddcb05c4e81"
+  },
+  "id": "GNTAwV4JtHyL9AJd",
+  "tags": []
+}
