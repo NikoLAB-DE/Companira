@@ -57,3 +57,15 @@ export interface Profile {
   //   language?: string; // Old language field if different from top-level
   // };
 }
+
+// Updated Task interface for TodoList
+export interface Task {
+  id: string;
+  text: string;
+  completed: boolean;
+  dueDate?: string; // Store as ISO string (e.g., "2023-10-27") or undefined
+  fixDate?: string; // Store as ISO string or undefined
+  dueTime?: string; // Store as HH:mm string (e.g., "14:30") or undefined
+  fixTime?: string; // Store as HH:mm string or undefined
+  comment?: string; // Optional text comment
+}

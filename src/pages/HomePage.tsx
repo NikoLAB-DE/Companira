@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useChat } from '../contexts/ChatContext';
 import { Button } from '../components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'; // Ensure Link is imported
 import ChatContainer from '../components/chat/ChatContainer';
 import FAQSection from '../components/faq/FAQSection';
 import { MessageSquare, BrainCircuit, ShieldCheck, Users, PlayCircle } from 'lucide-react'; // Added icons
@@ -99,6 +99,10 @@ const HomePage: React.FC = () => {
                   <Button variant="outline" size="lg" className="w-full sm:w-auto">Log In</Button>
                 </Link>
               </div>
+               {/* Add Contact Us link for non-logged-in users */}
+               <p className="mt-6 text-sm text-muted-foreground">
+                 Have questions? <Link to="/about" className="text-primary hover:underline font-medium">Contact Us</Link>
+               </p>
             </div>
           </section>
 

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'; // Import cn for conditional classes
 const Navbar = () => {
   const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme(); // Ensure toggleTheme is correctly used
 
   const handleSignOut = async () => {
     await signOut();
@@ -88,7 +88,7 @@ const Navbar = () => {
 
           {/* Right Side: Theme Toggle, Auth Buttons/User Menu */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Theme Toggle Button */}
+            {/* Theme Toggle Button - Ensure onClick directly calls toggleTheme */}
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>

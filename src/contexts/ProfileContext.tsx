@@ -3,7 +3,7 @@ import { Profile } from '../types';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
-interface ProfileContextType {
+interface ProfileContextType { 
   profile: Profile | null;
   loading: boolean;
   error: string | null;

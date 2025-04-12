@@ -1,33 +1,20 @@
-import { Routes, Route, Outlet } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ProfileProvider } from '@/contexts/ProfileContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import { ChatProvider } from '@/contexts/ChatContext';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import HomePage from '@/pages/HomePage';
-import LoginPage from '@/pages/LoginPage';
-import SignupPage from '@/pages/SignupPage';
-import ProfilePage from '@/pages/ProfilePage';
-import MyDashboardPage from '@/pages/MyDashboardPage';
-import LifeSituationsPage from '@/pages/LifeSituationsPage';
-import AnalysisPage from '@/pages/AnalysisPage';
-import ToolsPage from '@/pages/ToolsPage';
-import AboutPage from '@/pages/AboutPage';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
-
-function AppLayout() {
-  return (
-    <div className="flex flex-col h-screen"> {/* Changed min-h-screen to h-screen */}
-      <Navbar />
-      {/* Make the main content area grow and scroll independently */}
-      <main className="flex-grow overflow-y-auto"> {/* Removed flex flex-col, changed overflow-hidden to overflow-y-auto */}
-        <Outlet /> {/* Child routes will render here */}
-      </main>
-      <Footer />
-    </div>
-  );
-}
+import { Route, Routes } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { ProfileProvider } from './contexts/ProfileContext';
+import { ChatProvider } from './contexts/ChatContext';
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import ProfilePage from './pages/ProfilePage';
+import LifeSituationsPage from './pages/LifeSituationsPage';
+import AnalysisPage from './pages/AnalysisPage';
+import ToolsPage from './pages/ToolsPage';
+import AboutPage from './pages/AboutPage';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import { Toaster } from "@/components/ui/toaster";
 
 function App() {
   return (
@@ -35,40 +22,35 @@ function App() {
       <AuthProvider>
         <ProfileProvider>
           <ChatProvider>
-            <Routes>
-              <Route element={<AppLayout />}>
-                {/* Public Routes */}
-                <Route path="/" element={<HomePage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
-                <Route path="/life-situations" element={<LifeSituationsPage />} />
-                <Route path="/about" element={<AboutPage />} />
+            {/* Layout: flex-col, min-h-screen, with main flex-grow and footer fixed */}
+            <div className="flex flex-col min-h-screen">
+              <Navbar />
+              {/* Add bottom padding equal to footer height to prevent overlap */}
+              <main className="flex-grow container mx-auto px-4 py-8 pb-16">
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/about" element={<AboutPage />} />
 
-                {/* Protected Routes */}
-                <Route path="/profile" element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                } />
-                 <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <MyDashboardPage />
-                  </ProtectedRoute>
-                } />
-                 <Route path="/analysis" element={
-                  <ProtectedRoute>
-                    <AnalysisPage />
-                  </ProtectedRoute>
-                } />
-                 <Route path="/tools" element={
-                  <ProtectedRoute>
-                    <ToolsPage />
-                  </ProtectedRoute>
-                } />
+                  {/* Routes accessible by anyone */}
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/life-situations" element={<LifeSituationsPage />} />
+                  <Route path="/life-situations/:topicId" element={<LifeSituationsPage />} />
 
-                {/* Add other routes as needed */}
-              </Route>
-            </Routes>
+                  {/* Protected Routes */}
+                  <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                  <Route path="/analysis" element={<ProtectedRoute><AnalysisPage /></ProtectedRoute>} />
+                  <Route path="/tools" element={<ProtectedRoute><ToolsPage /></ProtectedRoute>} />
+
+                  {/* Optional: 404 Not Found Route */}
+                  {/* <Route path="*" element={<NotFoundPage />} /> */}
+                </Routes>
+              </main>
+              <Toaster />
+              {/* Footer is now fixed and always visible */}
+              <Footer />
+            </div>
           </ChatProvider>
         </ProfileProvider>
       </AuthProvider>

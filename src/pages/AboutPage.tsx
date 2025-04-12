@@ -1,6 +1,7 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Shield, Heart, MessageSquare } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Shield, Heart } from 'lucide-react';
+import ContactForm from '../components/contact/ContactForm'; // Import the new form
 
 const AboutPage: React.FC = () => {
   return (
@@ -50,23 +51,9 @@ const AboutPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <MessageSquare className="h-5 w-5 mr-2 text-purple-600" />
-              Contact Us
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-700 dark:text-gray-300"> {/* Adjusted text color for dark mode */}
-              We'd love to hear from you! If you have questions, feedback, or need support, please reach out to us:
-            </p>
-            <div className="mt-4 space-y-2">
-              <p className="text-gray-700 dark:text-gray-300"><strong>Email:</strong> support@companira.com</p> {/* Adjusted text color for dark mode */}
-              <p className="text-gray-700 dark:text-gray-300"><strong>Support Hours:</strong> Monday-Friday, 9am-5pm CET</p> {/* Adjusted text color for dark mode */}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Replace the old Contact Us card with the ContactForm component */}
+        <ContactForm />
+
       </div>
     </div>
   );

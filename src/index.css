@@ -25,6 +25,7 @@
     --input: 240 5.9% 90%;
     --ring: 25 95% 53%; /* Orange for focus rings */
     --radius: 0.5rem;
+    --footer-height: 56px;
   }
 
   .dark {
@@ -184,5 +185,12 @@
      th, td {
       @apply border-border;
     }
+  }
+}
+
+/* --- Footer fixed height utility for main content padding --- */
+@layer utilities {
+  .pb-footer {
+    padding-bottom: var(--footer-height);
   }
 }
