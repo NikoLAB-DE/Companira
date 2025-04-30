@@ -3,29 +3,38 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAdmin } from '@/contexts/AdminContext'; // Import useAdmin
 import {
   Moon, Sun, LogOut, UserCircle, LayoutGrid, Wrench, BarChart2, BookOpen, Info,
-  MessageSquare, // Added for Chat
-  ClipboardList // Added for Tools
+  MessageSquare,
+  ClipboardList
 } from 'lucide-react';
-import { cn } from '@/lib/utils'; // Import cn for conditional classes
+import { cn, getInitials } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
 
 const Navbar = () => {
   const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme(); // Ensure toggleTheme is correctly used
+  const { theme, toggleTheme } = useTheme();
+  const { registerLogoClick } = useAdmin(); // Get registerLogoClick function
+
+  const { data: darkLogoData } = supabase.storage.from('logo').getPublicUrl('companira_logo_dark_mode.png');
+  const { data: lightLogoData } = supabase.storage.from('logo').getPublicUrl('companira_logo_light_mode.png');
+
+  const darkLogoUrl = darkLogoData?.publicUrl;
+  const lightLogoUrl = lightLogoData?.publicUrl;
 
   const handleSignOut = async () => {
     await signOut();
-    // Navigation is handled within signOut or by AuthProvider listener
   };
 
-  const getInitials = (name: string | undefined) => {
-    if (!name) return 'U';
-    const parts = name.split(' ').filter(Boolean);
-    if (parts.length === 0) return 'U';
-    if (parts.length === 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  const handleLogoClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    // Prevent navigation if it's just for admin activation
+    // Allow navigation if admin is already active or if it's a normal click?
+    // For simplicity, let's always register the click. Navigation still happens.
+    registerLogoClick();
+    // If you want to PREVENT navigation during the 5 clicks, you'd need more complex state.
+    // Example: if (clickCount < 5) event.preventDefault();
   };
 
   const commonLinkClasses = "px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center";
@@ -41,13 +50,26 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Left Side: Logo/Brand and Main Links */}
           <div className="flex items-center space-x-6">
-            {/* Companira Logo/Brand Link */}
-            <Link to="/" className="text-xl font-bold text-primary flex items-center">
+            {/* Companira Logo/Brand Link - ADD onClick HANDLER */}
+            <Link
+              to="/"
+              className="text-xl font-bold text-primary flex items-center"
+              onClick={handleLogoClick} // Add the click handler here
+            >
+              {/* Theme-aware Logo */}
+              {theme === 'dark' && darkLogoUrl &&
+                <img src={darkLogoUrl} alt="Companira Logo Dark" width={40} height={40} className="mr-2 h-10 w-10 pointer-events-none" /> // Added pointer-events-none to img
+              }
+              {theme === 'light' && lightLogoUrl &&
+                <img src={lightLogoUrl} alt="Companira Logo Light" width={40} height={40} className="mr-2 h-10 w-10 pointer-events-none" /> // Added pointer-events-none to img
+              }
+              {((!darkLogoUrl && theme === 'dark') || (!lightLogoUrl && theme === 'light')) &&
+                <span className="mr-2 w-10 h-10"></span>
+              }
               Companira
             </Link>
-            {/* --- Desktop Navigation Links --- */}
+            {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
-               {/* Home / Chat Link */}
                {user ? (
                  <Link to="/" className={cn(commonLinkClasses)}>
                    <MessageSquare className="h-4 w-4 mr-1.5" /> Chat
@@ -57,29 +79,25 @@ const Navbar = () => {
                    Home
                  </Link>
                )}
-               {/* Life Situations Link (Always Visible) */}
                <Link to="/life-situations" className={cn(commonLinkClasses)}>
                  <BookOpen className="h-4 w-4 mr-1.5" /> Life Situations
                </Link>
-               {/* Analysis Link (Conditional) */}
                <Link
                  to="/analysis"
                  className={cn(commonLinkClasses, !user && disabledLinkClasses)}
                  aria-disabled={!user}
-                 onClick={(e) => !user && e.preventDefault()} // Prevent navigation if disabled
+                 onClick={(e) => !user && e.preventDefault()}
                >
                  <BarChart2 className="h-4 w-4 mr-1.5" /> Analysis
                </Link>
-               {/* Tools Link (Conditional) */}
                <Link
                  to="/tools"
                  className={cn(commonLinkClasses, !user && disabledLinkClasses)}
                  aria-disabled={!user}
-                 onClick={(e) => !user && e.preventDefault()} // Prevent navigation if disabled
+                 onClick={(e) => !user && e.preventDefault()}
                >
-                 <ClipboardList className="h-4 w-4 mr-1.5" /> Tools {/* Updated Icon */}
+                 <ClipboardList className="h-4 w-4 mr-1.5" /> Tools
                </Link>
-               {/* About Link (Always Visible) */}
                <Link to="/about" className={cn(commonLinkClasses)}>
                  <Info className="h-4 w-4 mr-1.5" /> About
                </Link>
@@ -88,7 +106,6 @@ const Navbar = () => {
 
           {/* Right Side: Theme Toggle, Auth Buttons/User Menu */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Theme Toggle Button - Ensure onClick directly calls toggleTheme */}
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
@@ -97,7 +114,6 @@ const Navbar = () => {
               <div className="h-8 w-20 bg-muted rounded animate-pulse"></div>
             ) : user ? (
               <>
-                {/* User Avatar and Nickname */}
                 <Link to="/profile" className="flex items-center space-x-2 hover:bg-accent p-1 rounded-md transition-colors">
                    <Avatar className="h-8 w-8">
                      <AvatarFallback className="text-xs bg-primary text-primary-foreground">
@@ -106,15 +122,12 @@ const Navbar = () => {
                    </Avatar>
                    <span className="text-sm font-medium hidden sm:inline">{user.nickname}</span>
                 </Link>
-
-                {/* Sign Out Button */}
                 <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out">
                   <LogOut className="h-5 w-5 text-muted-foreground hover:text-foreground" />
                 </Button>
               </>
             ) : (
               <>
-                {/* Login/Signup Buttons */}
                 <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
                   Log In
                 </Button>
@@ -126,9 +139,8 @@ const Navbar = () => {
           </div>
         </div>
 
-         {/* --- Mobile Navigation Links --- */}
+         {/* Mobile Navigation Links */}
          <div className="md:hidden flex justify-around items-center py-2 border-t border-border bg-card">
-             {/* Home / Chat Link */}
              {user ? (
                <Link to="/" className={cn(mobileCommonLinkClasses)}>
                  <MessageSquare className="h-5 w-5 mb-0.5" /> Chat
@@ -138,33 +150,28 @@ const Navbar = () => {
                  <LayoutGrid className="h-5 w-5 mb-0.5" /> Home
                </Link>
              )}
-             {/* Life Situations Link (Always Visible) */}
              <Link to="/life-situations" className={cn(mobileCommonLinkClasses)}>
                <BookOpen className="h-5 w-5 mb-0.5" /> Situations
              </Link>
-             {/* Analysis Link (Conditional) */}
              <Link
                to="/analysis"
                className={cn(mobileCommonLinkClasses, !user && mobileDisabledLinkClasses)}
                aria-disabled={!user}
-               onClick={(e) => !user && e.preventDefault()} // Prevent navigation if disabled
+               onClick={(e) => !user && e.preventDefault()}
              >
                <BarChart2 className="h-5 w-5 mb-0.5" /> Analysis
              </Link>
-             {/* Tools Link (Conditional) */}
              <Link
                to="/tools"
                className={cn(mobileCommonLinkClasses, !user && mobileDisabledLinkClasses)}
                aria-disabled={!user}
-               onClick={(e) => !user && e.preventDefault()} // Prevent navigation if disabled
+               onClick={(e) => !user && e.preventDefault()}
              >
-               <ClipboardList className="h-5 w-5 mb-0.5" /> Tools {/* Updated Icon */}
+               <ClipboardList className="h-5 w-5 mb-0.5" /> Tools
              </Link>
-             {/* About Link (Always Visible) */}
              <Link to="/about" className={cn(mobileCommonLinkClasses)}>
                <Info className="h-5 w-5 mb-0.5" /> About
              </Link>
-             {/* Profile link only shown if logged in on mobile */}
              {user && (
                 <Link to="/profile" className={cn(mobileCommonLinkClasses)}>
                   <UserCircle className="h-5 w-5 mb-0.5" /> Profile

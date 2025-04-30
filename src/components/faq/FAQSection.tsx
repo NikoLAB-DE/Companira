@@ -1,6 +1,7 @@
 import React from 'react';
 import FAQItem from './FAQItem';
 import { faqData } from '@/data/faqData';
+import { Link } from 'react-router-dom'; // Import Link
 
 const FAQSection: React.FC = () => {
   return (
@@ -26,9 +27,10 @@ const FAQSection: React.FC = () => {
         <div className="mt-8 text-center"> {/* Reduced mt-12 to mt-8 */}
           <p className="text-sm text-muted-foreground"> {/* Added text-sm */}
             Still have questions?{' '}
-            <a href="#" className="font-medium text-primary hover:text-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded">
+            {/* Updated Link to include hash */}
+            <Link to="/about#contact-form" className="font-medium text-primary hover:text-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded">
               Contact us
-            </a> for more information.
+            </Link> for more information.
           </p>
         </div>
 

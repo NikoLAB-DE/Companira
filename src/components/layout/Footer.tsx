@@ -2,21 +2,21 @@ import React from 'react';
 import { Heart } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Import Link
 
-const FOOTER_HEIGHT = 56; // px, must match the height in styles
+const FOOTER_HEIGHT = 48; // px, UPDATED height
 
 const Footer: React.FC = () => {
   return (
     <footer
-      className="bg-card border-t border-border py-3 px-0 w-full fixed bottom-0 left-0 z-40"
-      style={{ height: `${FOOTER_HEIGHT}px` }}
+      className="bg-card border-t border-border py-2 px-0 w-full fixed bottom-0 left-0 z-40" // Reduced py
+      style={{ height: `${FOOTER_HEIGHT}px` }} // Use updated height
       data-testid="footer"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
         <div className="flex flex-col md:flex-row justify-between items-center w-full text-xs h-full">
-          <div className="flex items-center mb-2 md:mb-0">
+          <div className="flex items-center mb-1 md:mb-0"> {/* Reduced margin */}
             <span className="text-muted-foreground">© {new Date().getFullYear()} Companira</span>
           </div>
-          <div className="flex items-center text-muted-foreground mb-2 md:mb-0">
+          <div className="flex items-center text-muted-foreground mb-1 md:mb-0"> {/* Reduced margin */}
             <span className="flex items-center">
               Made with <Heart className="h-3 w-3 mx-1 text-destructive" />
               for mental wellbeing
@@ -30,7 +30,8 @@ const Footer: React.FC = () => {
             <Link to="/terms" className="text-primary hover:underline">
               Terms
             </Link>
-            <Link to="/about" className="text-primary hover:underline">
+            {/* Updated link to include hash */}
+            <Link to="/about#contact-form" className="text-primary hover:underline">
               Contact
             </Link>
           </div>

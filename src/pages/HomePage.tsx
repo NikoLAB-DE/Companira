@@ -1,15 +1,33 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useChat } from '../contexts/ChatContext';
-import { Button } from '../components/ui/button';
-import { Link } from 'react-router-dom'; // Ensure Link is imported
+import { Button, buttonVariants } from '../components/ui/button'; // Import buttonVariants
+import { Link, useNavigate } from 'react-router-dom';
 import ChatContainer from '../components/chat/ChatContainer';
 import FAQSection from '../components/faq/FAQSection';
-import { MessageSquare, BrainCircuit, ShieldCheck, Users, PlayCircle } from 'lucide-react'; // Added icons
+import { MessageSquare, BrainCircuit, ShieldCheck, Users, PlayCircle, HelpCircle, CheckCircle, UserCircle } from 'lucide-react';
+import { useActiveTasks } from '@/hooks/useActiveTasks';
+import HelpDialog from '@/components/HelpDialog';
+import { useAdmin } from '@/contexts/AdminContext';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { useProfile } from '@/contexts/ProfileContext';
+
+// Import the markdown file content as raw strings
+import chatHelpMarkdown from '../../chat_help.md?raw';
+import profileHelpMarkdown from '../../profile_help.md?raw';
 
 const HomePage: React.FC = () => {
   const { user } = useAuth();
   const { chatId } = useChat();
+  const { activeTasks } = useActiveTasks(user?.id);
+  const { isAdmin } = useAdmin();
+  const { profile, loading: profileLoading } = useProfile();
+  const navigate = useNavigate();
+
+  // State for Help Dialogs
+  const [isChatHelpDialogOpen, setIsChatHelpDialogOpen] = useState(false);
+  const [isProfileHelpDialogOpen, setIsProfileHelpDialogOpen] = useState(false);
 
   // Video state and ref
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -17,62 +35,89 @@ const HomePage: React.FC = () => {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    // Construct the public URL for the video from Supabase environment variables
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (supabaseUrl) {
       try {
-        // Extract project reference from the Supabase URL
         const url = new URL(supabaseUrl);
         const projectRef = url.hostname.split('.')[0];
-        // Construct the public storage URL
         const publicUrl = `https://${projectRef}.supabase.co/storage/v1/object/public/video/Companira_ad.mp4`;
         setVideoUrl(publicUrl);
       } catch (error) {
         console.error("Error constructing Supabase video URL:", error);
-        // Handle error appropriately, maybe set a state to show an error message
       }
     } else {
       console.error("VITE_SUPABASE_URL is not defined in environment variables.");
-      // Handle missing env var
     }
-  }, []); // Run only once on component mount
+  }, []);
 
   const handleVideoClick = () => {
     if (videoRef.current) {
       if (!isPlaying) {
         videoRef.current.play().catch(error => {
           console.error("Video play failed:", error);
-          // Handle potential play errors (e.g., browser restrictions)
         });
         setIsPlaying(true);
       }
-      // Optional: Allow pausing by clicking again
-      // else {
-      //   videoRef.current.pause();
-      //   setIsPlaying(false);
-      // }
     }
   };
 
   const handleVideoEnd = () => {
-    setIsPlaying(false); // Reset play button when video ends
+    setIsPlaying(false);
     if (videoRef.current) {
-      videoRef.current.currentTime = 0; // Optional: Reset video to start
+      videoRef.current.currentTime = 0;
     }
   };
+
+  const activeTaskCount = activeTasks.length;
+  const taskMessage = activeTaskCount > 0
+    ? `You have ${activeTaskCount} active task${activeTaskCount > 1 ? 's' : ''}.`
+    : 'You have no active tasks.';
+
+  const handlePricingButtonClick = () => {
+    navigate('/signup');
+  };
+
+  const hasProfile = !profileLoading && profile !== null && profile.user_id === user?.id;
+  const showCreateProfileIcon = user && !profileLoading && profile === null;
 
 
   return (
     <div className="container mx-auto px-4 py-8">
       {user ? (
-        // Authenticated user view
         <div className="max-w-4xl mx-auto">
           <div className="bg-card border border-border rounded-lg shadow-md h-[70vh] mb-8">
             <div className="bg-muted/50 border-b border-border p-3 flex justify-between items-center rounded-t-lg">
               <p className="text-foreground font-medium">
                 Welcome back, <span className="font-bold">{user.nickname || user.email}</span>! How can I help you today?
+                <span className="block text-sm text-muted-foreground mt-1">
+                  {taskMessage} <Link to="/tools" className="text-primary hover:underline">View tasks</Link>
+                </span>
               </p>
-              <span className="text-xs text-muted-foreground">Chat ID: {chatId.substring(0, 8)}</span>
+              <div className="flex items-center space-x-2">
+                 {showCreateProfileIcon && (
+                    <Button
+                       variant="ghost"
+                       size="icon"
+                       onClick={() => setIsProfileHelpDialogOpen(true)}
+                       aria-label="Open profile help"
+                       title="Create Your Profile"
+                       className="text-orange-500 hover:text-orange-600"
+                    >
+                       <UserCircle className="h-5 w-5" />
+                    </Button>
+                 )}
+                 <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsChatHelpDialogOpen(true)}
+                    aria-label="Open chat help"
+                    title="Chat Help"
+                    className="text-muted-foreground hover:text-foreground"
+                 >
+                    <HelpCircle className="h-5 w-5" />
+                 </Button>
+                 <span className="text-xs text-muted-foreground">Chat ID: {chatId.substring(0, 8)}</span>
+              </div>
             </div>
             <div className="h-[calc(70vh-48px)]">
               <ChatContainer />
@@ -80,7 +125,6 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       ) : (
-        // Non-authenticated user view
         <>
           {/* Hero Section */}
           <section className="text-center py-16 md:py-24 bg-gradient-to-br from-primary/10 via-background to-background rounded-lg mb-16">
@@ -92,16 +136,23 @@ const HomePage: React.FC = () => {
                 Engage in meaningful conversations, gain insights, and access tools designed to support your emotional health and personal growth. Secure, empathetic, and always available.
               </p>
               <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <Link to="/signup">
-                  <Button size="lg" className="w-full sm:w-auto">Get Started for Free</Button>
+                {/* Apply button styles directly to Link */}
+                <Link
+                  to="/signup"
+                  className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
+                >
+                  Get Started for Free
                 </Link>
-                <Link to="/login">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto">Log In</Button>
+                {/* Apply button styles directly to Link */}
+                <Link
+                  to="/login"
+                  className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full sm:w-auto")}
+                >
+                  Log In
                 </Link>
               </div>
-               {/* Add Contact Us link for non-logged-in users */}
                <p className="mt-6 text-sm text-muted-foreground">
-                 Have questions? <Link to="/about" className="text-primary hover:underline font-medium">Contact Us</Link>
+                 Have questions? <Link to="/about#contact-form" className="text-primary hover:underline font-medium">Contact Us</Link>
                </p>
             </div>
           </section>
@@ -112,7 +163,6 @@ const HomePage: React.FC = () => {
               Why Choose Companira?
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {/* Feature Cards */}
               <div className="flex flex-col items-center text-center p-6 bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow">
                 <div className="p-3 rounded-full bg-primary/10 mb-4">
                    <MessageSquare className="h-8 w-8 text-primary" />
@@ -155,11 +205,10 @@ const HomePage: React.FC = () => {
                 <video
                   ref={videoRef}
                   src={videoUrl}
-                  className="w-full block" // Ensure video takes full width of container
-                  playsInline // Important for playback on iOS
-                  onEnded={handleVideoEnd} // Reset state when video finishes
-                  // poster="/path/to/your/poster.jpg" // Optional: Add a poster image URL here
-                  preload="metadata" // Preload metadata to get dimensions/duration
+                  className="w-full block"
+                  playsInline
+                  onEnded={handleVideoEnd}
+                  preload="metadata"
                   aria-label="Click to play Companira introduction video"
                 />
                 {!isPlaying && (
@@ -170,7 +219,6 @@ const HomePage: React.FC = () => {
               </div>
             </section>
           ) : (
-             // Optional: Show a loading state or placeholder if the URL is not yet available
              <section className="mb-16 text-center">
                 <p className="text-muted-foreground">Loading video...</p>
              </section>
@@ -191,10 +239,111 @@ const HomePage: React.FC = () => {
             </div>
           </section>
 
+          {/* Pricing Section - Visible only if NOT logged in */}
+          {!user && (
+            <section className="mb-16" aria-labelledby="pricing-heading">
+              <h2 id="pricing-heading" className="text-3xl font-bold text-center mb-12 text-foreground">
+                Pricing
+              </h2>
+              {/* "Free for test users!" Badge/Text */}
+              <div className="text-center mb-8">
+                 <p className="text-xl font-bold text-primary">Free for test users!</p>
+                 <p className="text-sm text-muted-foreground">Sign up now to access all features during the testing phase.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Free Trial Tier */}
+                <Card className="flex flex-col text-center transition-all duration-300 hover:shadow-lg hover:scale-105">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold">Free Trial</CardTitle>
+                    <CardDescription>Experience all features</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow space-y-4">
+                    <p className="text-4xl font-extrabold text-primary">$0<span className="text-base font-medium text-muted-foreground">/10 days</span></p>
+                    <ul className="text-left space-y-2 text-muted-foreground">
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Access to ALL functionalities</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Full chat capabilities</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Full profile customization</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Access to Life Situations content</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Full access to Tools</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Full access to Analysis</li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full" variant="outline" onClick={handlePricingButtonClick}>Start Free Trial</Button>
+                  </CardFooter>
+                </Card>
+
+                {/* Standard Tier */}
+                <Card className="flex flex-col text-center transition-all duration-300 hover:shadow-lg hover:scale-105">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold">Standard</CardTitle>
+                    <CardDescription>Essential support</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow space-y-4">
+                    <p className="text-4xl font-extrabold text-primary">$14<span className="text-base font-medium text-muted-foreground">/month</span></p>
+                     <ul className="text-left space-y-2 text-muted-foreground">
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Unlimited chat messages</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Full profile customization</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Access to Life Situations content</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Limited access to Tools</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Limited access to Analysis</li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full" onClick={handlePricingButtonClick}>Choose Standard</Button>
+                  </CardFooter>
+                </Card>
+
+                {/* Pro Tier (Highlighted) */}
+                <Card className="flex flex-col text-center border-primary border-2 transition-all duration-300 hover:shadow-lg hover:scale-105">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold">Pro</CardTitle>
+                    <CardDescription>Unlock full potential</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow space-y-4">
+                    <p className="text-4xl font-extrabold text-primary">$19<span className="text-base font-medium text-muted-foreground">/month</span></p>
+                     <ul className="text-left space-y-2 text-muted-foreground">
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Unlimited chat messages</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Full profile customization</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Access to Life Situations content</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Full access to Tools</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Full access to Analysis</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Voice control</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Internet search</li>
+                      <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Priority support</li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full" onClick={handlePricingButtonClick}>Choose Pro</Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </section>
+          )}
+
+
           {/* FAQ Section */}
           <FAQSection />
         </>
       )}
+
+      {/* Chat Help Dialog Component */}
+      <HelpDialog
+         isOpen={isChatHelpDialogOpen}
+         onClose={() => setIsChatHelpDialogOpen(false)}
+         markdownContent={chatHelpMarkdown}
+         title="Chat Help"
+         description="Tips for using the chat feature."
+      />
+
+      {/* Profile Help Dialog Component */}
+      <HelpDialog
+         isOpen={isProfileHelpDialogOpen}
+         onClose={() => setIsProfileHelpDialogOpen(false)}
+         markdownContent={profileHelpMarkdown}
+         title="Complete Your Profile"
+         description="Unlock a more personalized experience."
+      />
     </div>
   );
 };

@@ -40,34 +40,35 @@ const SignupPage: React.FC = () => {
     // --- End Tester ID Validation ---
 
     try {
-      // Call the signUp function from AuthContext
-      console.log("Calling signUp with:", { nickname, email });
+      // Call the signUp function from AuthContext (now simplified)
+      console.log("Calling signUp from SignupPage with:", { nickname, email });
       const response = await signUp(nickname, email, password);
       console.log("Response from signUp in SignupPage:", response); // Log the received response
 
       // Check if the response contains an error object
       if (response.error) {
-        console.error("Signup failed (detected in SignupPage):", response.error);
+        console.error("Signup failed (detected in SignupPage):", response.error.message);
         // Set the page-specific error state with the message from the error object
+        // The message might have been standardized in AuthContext
         setError(response.error.message || 'Failed to sign up. Please check your details and try again.');
-        // Do NOT reset form or navigate away - let user correct the issue
-      } else if (response.data.user) {
-        // Signup was successful, user object exists
-        console.log("Signup successful, navigating to login...");
-        // Only redirect to login after successful signup
+      } else if (response.data.user || response.data.session) {
+        // Signup was successful (or requires confirmation), user/session object exists
+        console.log("Signup successful or pending confirmation, navigating to login...");
+        // Redirect to login page. If email confirmation is required,
+        // the user will see a message there or need to check their email.
+        // Consider showing a success message here before navigating:
+        // e.g., setSuccess("Account created! Please check your email for confirmation.")
         navigate('/login');
       } else {
-        // Handle unexpected case where there's no error but also no user
-        console.error("Signup returned no error and no user.");
+        // Handle unexpected case where there's no error but also no user/session
+        console.error("Signup returned no error and no user/session data.");
         setError('An unexpected issue occurred during sign up. Please try again.');
-        // Do NOT reset form or navigate away - let user try again
       }
     } catch (err: any) {
-      // This catch block in SignupPage should ideally not be hit if AuthContext handles errors properly,
-      // but keep it as a fallback for truly unexpected issues during the await/call itself.
+      // This catch block handles errors *outside* the signUp promise itself (e.g., network error before call)
+      // It's less likely to be hit now that AuthContext catches internal errors.
       console.error("Unexpected error during signup process in SignupPage:", err);
-      setError(err.message || 'An unexpected error occurred. Please try again.');
-      // Do NOT reset form or navigate away - let user try again
+      setError(err.message || 'An unexpected network or system error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -96,7 +97,7 @@ const SignupPage: React.FC = () => {
               <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium">Signup Failed</p>
-                <p>{error}</p>
+                <p>{error}</p> {/* Display the error message from state */}
               </div>
             </div>
           )}
@@ -111,7 +112,9 @@ const SignupPage: React.FC = () => {
                 placeholder="Enter your Tester ID"
                 required
                 className="mt-1"
+                aria-describedby="testerIdHint" // For accessibility
               />
+               <p id="testerIdHint" className="text-xs text-muted-foreground mt-1">Required for the testing phase.</p>
             </div>
             <div>
               <Label htmlFor="nickname">Nickname</Label>
@@ -123,7 +126,9 @@ const SignupPage: React.FC = () => {
                 placeholder="Choose a unique nickname"
                 required
                 className="mt-1"
+                aria-describedby="nicknameHint"
               />
+              <p id="nicknameHint" className="text-xs text-muted-foreground mt-1">This will be your display name.</p>
             </div>
             <div>
               <Label htmlFor="email">Email</Label>
@@ -144,11 +149,13 @@ const SignupPage: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Must be at least 6 characters"
+                placeholder="Enter your password"
                 required
-                minLength={6}
+                minLength={6} // Keep client-side check
                 className="mt-1"
+                aria-describedby="passwordHint"
               />
+               <p id="passwordHint" className="text-xs text-muted-foreground mt-1">Must be at least 6 characters long.</p>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Creating Account...' : 'Sign Up as Tester'}

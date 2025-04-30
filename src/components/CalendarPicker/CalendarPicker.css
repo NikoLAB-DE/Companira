@@ -1,0 +1,63 @@
+/* ... existing styles ... */
+
+/* Ensure the main container allows grid layout */
+.calendar-container { /* Or the appropriate top-level selector for your calendar */
+  /* Add other container styles like width, border etc. if needed */
+}
+
+.calendar-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* Create 7 equal columns */
+  text-align: center; /* Center text within each grid cell */
+  padding-bottom: 5px; /* Optional spacing */
+  border-bottom: 1px solid #eee; /* Optional separator */
+  font-weight: bold;
+}
+
+.calendar-header .day-name {
+   padding: 5px 0; /* Adjust vertical padding if needed */
+   /* No width or inline-block needed with grid */
+}
+
+.calendar-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* 7 equal columns, matching header */
+  gap: 1px; /* Optional: adds a small space between day cells */
+}
+
+.calendar-body .day-number {
+  text-align: center; /* Center the number horizontally */
+  padding: 10px 0; /* Adjust padding as needed */
+  height: 35px; /* Example fixed height for alignment */
+  line-height: 15px; /* Adjust line-height to vertically center within height */
+  cursor: pointer;
+  display: flex; /* Use flexbox for easy centering */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  box-sizing: border-box;
+}
+
+/* Add this new style for days not in the current month */
+.calendar-body .day-number.other-month {
+  color: #aaa; /* Make text lighter */
+  cursor: default; /* Indicate it's not selectable */
+  /* background-color: #f8f8f8; */ /* Optional: slightly different background */
+}
+
+.calendar-body .day-number:not(.other-month):hover {
+  background-color: #eee; /* Apply hover only to current month days */
+}
+
+/* If you have styles for .empty cells, they might need review */
+/* .calendar-body .day-number.empty { ... } */
+
+.calendar-body .day-number.empty {
+  /* Styles for empty cells before/after month days */
+  cursor: default;
+  background-color: transparent; /* Or a specific background */
+}
+
+.calendar-body .day-number:hover:not(.empty) {
+  /* Example hover effect */
+  background-color: #eee;
+}

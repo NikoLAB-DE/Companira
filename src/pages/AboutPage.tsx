@@ -1,9 +1,39 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react'; // Import useEffect and useRef
+import { useLocation } from 'react-router-dom'; // Import useLocation
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Shield, Heart } from 'lucide-react';
 import ContactForm from '../components/contact/ContactForm'; // Import the new form
 
 const AboutPage: React.FC = () => {
+  const location = useLocation(); // Get current location
+  const contactFormRef = useRef<HTMLDivElement>(null); // Ref for the ContactForm Card
+
+  // Effect to scroll to and focus the contact form if the hash matches
+  useEffect(() => {
+    if (location.hash === '#contact-form') {
+      // Use a timeout to ensure the element is rendered before attempting to scroll/focus
+      const timer = setTimeout(() => {
+        const contactFormElement = document.getElementById('contact-form');
+        if (contactFormElement) {
+          console.log("Scrolling to and focusing contact form."); // Debug log
+          contactFormElement.scrollIntoView({ behavior: 'smooth' });
+          // Attempt to focus the first focusable element within the form card
+          const firstInput = contactFormElement.querySelector('input, textarea, button') as HTMLElement;
+          if (firstInput) {
+            firstInput.focus();
+          } else {
+             // Fallback focus on the card itself if no focusable elements found immediately
+             contactFormElement.focus();
+          }
+        } else {
+           console.warn("Element with id 'contact-form' not found."); // Debug log
+        }
+      }, 100); // Small delay
+
+      return () => clearTimeout(timer); // Cleanup the timer
+    }
+  }, [location.hash]); // Re-run effect when the URL hash changes
+
   return (
     // Added padding within the scrollable area
     <div className="max-w-4xl mx-auto py-8 px-4">
@@ -51,8 +81,10 @@ const AboutPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Replace the old Contact Us card with the ContactForm component */}
-        <ContactForm />
+        {/* Wrap ContactForm in a Card with the target ID */}
+        <Card id="contact-form" ref={contactFormRef} tabIndex={-1}> {/* Added id and tabIndex for focus */}
+           <ContactForm />
+        </Card>
 
       </div>
     </div>

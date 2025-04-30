@@ -25,7 +25,7 @@
     --input: 240 5.9% 90%;
     --ring: 25 95% 53%; /* Orange for focus rings */
     --radius: 0.5rem;
-    --footer-height: 56px;
+    --footer-height: 48px; /* UPDATED height */
   }
 
   .dark {
@@ -185,6 +185,11 @@
      th, td {
       @apply border-border;
     }
+  }
+
+  /* Add size-xs for Button component */
+  .btn-xs {
+    @apply h-8 px-2.5 text-xs; /* Adjust height, padding, and text size */
   }
 }
 

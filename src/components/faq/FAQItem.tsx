@@ -14,8 +14,8 @@ const FAQItem: React.FC<FAQItemProps> = ({ item, index }) => {
   const contentId = `faq-content-${index}`;
 
   return (
-    // Use card styling, reduced vertical padding
-    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+    // Apply hover effects to the main container div
+    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden transition-shadow duration-300 hover:shadow-md">
       <button
         // Reduced padding, ensure full width, maintain focus/hover
         className={cn(

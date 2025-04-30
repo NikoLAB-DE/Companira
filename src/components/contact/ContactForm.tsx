@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Loader2 } from 'lucide-react'; // Added Loader2
+import { supabase } from '@/lib/supabase'; // Import Supabase client
 
 const ContactForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -33,17 +34,35 @@ const ContactForm: React.FC = () => {
 
     setIsSubmitting(true);
 
-    // --- Simulate API Call ---
-    // In a real application, you would send the data to your backend here
-    // e.g., await fetch('/api/contact', { method: 'POST', body: JSON.stringify({ name, email, subject, message }) });
-    console.log("Form Data:", { name, email, subject, message });
+    try {
+      console.log("Invoking Supabase function 'send-contact-email' with:", { name, email, subject, message });
+      const { data, error: functionError } = await supabase.functions.invoke('send-contact-email', {
+        body: { name, email, subject, message },
+      });
 
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+      console.log("Supabase function response:", { data, functionError });
 
-    // --- Handle Response (Simulated) ---
-    const success = Math.random() > 0.1; // Simulate occasional failure
+      if (functionError) {
+        // Handle specific Supabase function errors if needed
+        console.error("Supabase function error:", functionError);
+        throw new Error(functionError.message || "Failed to send message via Supabase function.");
+      }
 
-    if (success) {
+      // Check the response from the Resend API within the function's data
+      // Resend API typically returns an object with an 'id' on success or 'error' object on failure.
+      if (data?.error) {
+         console.error("Resend API error (from function response):", data.error);
+         // Try to get a more specific error message from Resend's response structure
+         const resendErrorMessage = data.error.message || data.error.name || "Failed to send email via Resend.";
+         throw new Error(resendErrorMessage);
+      } else if (!data?.id) {
+         // If there's no functionError but also no Resend ID, something might be wrong
+         console.warn("Supabase function succeeded but no Resend email ID returned.", data);
+         // Consider this a success for the user, but log a warning
+         // throw new Error("Message sent, but confirmation from email service was unclear.");
+      }
+
+      // --- Success ---
       toast({
         title: "Message Sent!",
         description: "Thank you for contacting us. We'll get back to you soon.",
@@ -53,17 +72,18 @@ const ContactForm: React.FC = () => {
       setEmail('');
       setSubject('');
       setMessage('');
-    } else {
-      setError("Failed to send message. Please try again later.");
+
+    } catch (err: any) {
+      console.error("Error submitting contact form:", err);
+      setError(err.message || "Failed to send message. Please try again later.");
       toast({
         title: "Submission Error",
-        description: "Failed to send message. Please try again later.",
+        description: err.message || "Failed to send message. Please try again later.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
-    // --- End Simulation ---
-
-    setIsSubmitting(false);
   };
 
   return (
@@ -129,7 +149,13 @@ const ContactForm: React.FC = () => {
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
-            {isSubmitting ? 'Sending...' : 'Send Message'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
+              </>
+            ) : (
+              'Send Message'
+            )}
           </Button>
         </form>
       </CardContent>
