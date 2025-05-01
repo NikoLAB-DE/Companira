@@ -4,10 +4,26 @@ import { Button } from '../ui/button';
 import { Send, CornerDownLeft } from 'lucide-react';
 import { useChat } from '../../contexts/ChatContext';
 
-const ChatInput: React.FC = () => {
+// Define props interface including the new optional prop
+interface ChatInputProps {
+  initialTopicPath?: string | null;
+}
+
+const ChatInput: React.FC<ChatInputProps> = ({ initialTopicPath }) => { // Destructure the prop
   const [message, setMessage] = useState('');
   const { sendMessage, loading } = useChat();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Effect to set initial message from prop if provided and message is empty
+  useEffect(() => {
+    if (initialTopicPath && message === '') {
+      setMessage(initialTopicPath);
+      // Focus the textarea after setting the message
+      textareaRef.current?.focus();
+    }
+    // Only run when initialTopicPath changes (or on initial mount)
+    // Do not include 'message' in dependencies to avoid loops
+  }, [initialTopicPath]);
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();

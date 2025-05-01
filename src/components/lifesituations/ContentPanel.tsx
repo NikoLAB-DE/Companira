@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 interface ContentPanelProps {
   topicId: string | null;
   topicTitle: string | null;
-  topicPath: string[];
+  topicPath: string[]; // Array of strings representing the path
 }
 
 // Define the introductory text constant
@@ -48,9 +48,6 @@ const ContentPanel: React.FC<ContentPanelProps> = ({ topicId, topicTitle, topicP
 
         if (dbError) {
           if (dbError.code === 'PGRST116') {
-            // Content not found is not necessarily an "error" state for display,
-            // but we won't have markdown. Keep error null unless it's another issue.
-            // setError(`Content not found for topic "${topicTitle || id}". It might not be created yet.`);
             console.warn(`Content not found for topic "${topicTitle || id}"`);
           } else {
             setError(`Failed to load content: ${dbError.message}`);
@@ -59,7 +56,6 @@ const ContentPanel: React.FC<ContentPanelProps> = ({ topicId, topicTitle, topicP
         } else if (data) {
           setMarkdown(data.markdown);
         } else {
-           // No data returned, but no specific error code like PGRST116
            console.warn(`No content available for topic "${topicTitle || id}".`);
            setMarkdown(null);
         }
@@ -89,8 +85,13 @@ const ContentPanel: React.FC<ContentPanelProps> = ({ topicId, topicTitle, topicP
       return;
     }
 
-    console.log(`Logged-in user clicked button for topic "${topicTitle}". Navigating to main page.`);
-    navigate('/');
+    // Format the topic path array into a string
+    const formattedPath = topicPath.join(' > ');
+    const topicPrompt = `Let's talk about: ${formattedPath}`;
+
+    console.log(`Injecting topic path: "${topicPrompt}"`);
+    // Navigate to home page and pass the formatted path string in state
+    navigate('/', { state: { topicPathString: topicPrompt } });
   };
 
   const buttonText = user

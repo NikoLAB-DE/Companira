@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useChat } from '../contexts/ChatContext';
 import { Button, buttonVariants } from '../components/ui/button'; // Import buttonVariants
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
 import ChatContainer from '../components/chat/ChatContainer';
 import FAQSection from '../components/faq/FAQSection';
 import { MessageSquare, BrainCircuit, ShieldCheck, Users, PlayCircle, HelpCircle, CheckCircle, UserCircle } from 'lucide-react';
@@ -24,6 +24,10 @@ const HomePage: React.FC = () => {
   const { isAdmin } = useAdmin();
   const { profile, loading: profileLoading } = useProfile();
   const navigate = useNavigate();
+  const location = useLocation(); // Get location object
+
+  // Extract topic path string from location state
+  const initialTopicPath = location.state?.topicPathString as string | undefined;
 
   // State for Help Dialogs
   const [isChatHelpDialogOpen, setIsChatHelpDialogOpen] = useState(false);
@@ -49,6 +53,15 @@ const HomePage: React.FC = () => {
       console.error("VITE_SUPABASE_URL is not defined in environment variables.");
     }
   }, []);
+
+  // Clear location state after using it to prevent re-population on refresh/navigation
+  useEffect(() => {
+    if (location.state?.topicPathString) {
+      // Replace the current entry in the history stack without the state
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state, navigate]);
+
 
   const handleVideoClick = () => {
     if (videoRef.current) {
@@ -120,7 +133,8 @@ const HomePage: React.FC = () => {
               </div>
             </div>
             <div className="h-[calc(70vh-48px)]">
-              <ChatContainer />
+              {/* Pass the initialTopicPath down to ChatContainer */}
+              <ChatContainer initialTopicPath={initialTopicPath} />
             </div>
           </div>
         </div>

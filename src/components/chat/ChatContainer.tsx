@@ -8,9 +8,14 @@ import { Loader2, Info, AlertCircle } from 'lucide-react'; // Added AlertCircle
 import { Switch } from '../ui/switch';
 import { Label } from '../ui/label';
 import { Button } from '../ui/button';
-import { supabase } from '@/lib/supabase'; // *** ADDED IMPORT ***
+import { supabase } from '@/lib/supabase';
 
-const ChatContainer: React.FC = () => {
+// Define props interface including the new optional prop
+interface ChatContainerProps {
+  initialTopicPath?: string | null;
+}
+
+const ChatContainer: React.FC<ChatContainerProps> = ({ initialTopicPath }) => { // Destructure the prop
   const {
     messages,
     loading,
@@ -46,7 +51,7 @@ const ChatContainer: React.FC = () => {
            // Use silentInject: true so the greeting itself isn't sent to the webhook
            // and doesn't appear as a user message in the UI.
            // The assistant role ensures it looks like an AI message.
-           sendMessage('', 'assistant', welcomeText, true);
+           sendMessage('', 'assistant', welcomeText,true);
         }
       }, 500); // Adjust delay as needed
 
@@ -75,7 +80,6 @@ const ChatContainer: React.FC = () => {
     setLoadingThreads(true);
     try {
       // Fetch all threads for the user
-      // *** supabase is now defined because of the import above ***
       const { data, error } = await supabase
         .from('chat_threads')
         .select('id, title')
@@ -191,7 +195,8 @@ const ChatContainer: React.FC = () => {
 
       {/* Chat Input Area */}
       <div className="flex-shrink-0 p-2 border-t bg-background">
-        <ChatInput />
+        {/* Pass the initialTopicPath down to ChatInput */}
+        <ChatInput initialTopicPath={initialTopicPath} />
       </div>
     </div>
   );
