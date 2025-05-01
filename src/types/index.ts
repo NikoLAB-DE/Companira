@@ -69,3 +69,10 @@ export interface Task {
   fixTime?: string; // Store as HH:mm string or undefined
   comment?: string; // Optional text comment
 }
+
+// New interface for Pinned Items (short memory version)
+export interface PinnedItem {
+  id: string;
+  content: string;
+  timestamp: string; // To keep track of when it was pinned
+}

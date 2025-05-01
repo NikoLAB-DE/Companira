@@ -8,6 +8,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from '@/lib/utils';
+import { usePinnedItems } from '@/contexts/PinnedItemsContext'; // Import usePinnedItems
 
 interface ChatMessageProps {
   message: Message;
@@ -22,6 +23,7 @@ marked.setOptions({
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, userInitial, isLastMessage }) => {
   const { toast } = useToast();
+  const { addPinnedItem } = usePinnedItems(); // Use the addPinnedItem function
   const [isCopied, setIsCopied] = useState(false);
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
@@ -31,10 +33,17 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, userInitial, isLastM
     console.log("Placeholder: Export response", message.id);
     toast({ title: "Placeholder", description: "Export to PDF clicked." });
   };
-  const handlePin = () => {
-    console.log("Placeholder: Pin response", message.id);
-    toast({ title: "Placeholder", description: "Pin Response clicked." });
-  };
+  // UPDATED: Handle Pin action
+  const handlePin = useCallback(() => {
+    if (isAssistant && message.content) {
+      addPinnedItem(message.content); // Add the message content to pinned items
+      toast({ title: "Pinned!", description: "Response added to Pinned Conversations." });
+      console.log("Pinned response:", message.id);
+    } else {
+      toast({ title: "Info", description: "Only assistant responses can be pinned.", variant: "info" });
+    }
+  }, [isAssistant, message.content, addPinnedItem, toast]);
+
   const handleCreateTask = () => {
     console.log("Placeholder: Create task from response", message.id);
     toast({ title: "Placeholder", description: "Create Task clicked." });
@@ -139,15 +148,17 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, userInitial, isLastM
                 )}
                 {isCopied ? 'Copied!' : 'Copy'}
               </Button>
-              {/* Other Buttons */}
-              <Button variant="ghost" className="w-full justify-start px-2 py-1.5 text-sm" onClick={handleExport}>
-                <FileDown className="mr-2 h-4 w-4" /> Export to PDF
-              </Button>
+              {/* Pin Button */}
               <Button variant="ghost" className="w-full justify-start px-2 py-1.5 text-sm" onClick={handlePin}>
                 <Pin className="mr-2 h-4 w-4" /> Pin Response
               </Button>
+              {/* Create Task Button */}
               <Button variant="ghost" className="w-full justify-start px-2 py-1.5 text-sm" onClick={handleCreateTask}>
                 <ListPlus className="mr-2 h-4 w-4" /> Create Task
+              </Button>
+               {/* Export Button */}
+              <Button variant="ghost" className="w-full justify-start px-2 py-1.5 text-sm" onClick={handleExport}>
+                <FileDown className="mr-2 h-4 w-4" /> Export to PDF
               </Button>
             </PopoverContent>
           </Popover>
