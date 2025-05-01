@@ -75,7 +75,8 @@ const TodoList: React.FC<TodoListProps> = ({ userId, initialEditingTaskId }) => 
   const [editDueTime, setEditDueTime] = useState<string>('');
   const [editFixTime, setEditFixTime] = useState<string>('');
   const [editComment, setEditComment] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
+  // Set default filter status to 'active'
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('active');
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
   const fetchTasks = useCallback(async () => {
@@ -297,6 +298,16 @@ const TodoList: React.FC<TodoListProps> = ({ userId, initialEditingTaskId }) => 
     }
   }, [editingTaskId, editText, editDueDate, editFixDate, editDueTime, editFixTime, editComment, userId, tasks, toast, handleCancelEdit]);
 
+  // *** Handler for the chat icon click ***
+  const handleGoToChat = useCallback((task: Task) => {
+    let promptString = `Let's talk about my task and search the internet: "${task.text}".`;
+    if (task.comment && task.comment.trim() !== '') {
+      promptString += ` Comment: "${task.comment.trim()}"`;
+    }
+    console.log(`Navigating to chat with prompt: "${promptString}"`);
+    navigate('/', { state: { topicPathString: promptString } });
+  }, [navigate]);
+
 
   const groupedAndSortedTasks = useMemo(() => {
     const validTasks = tasks.filter(task => !task.id.startsWith('temp-') || tasks.find(t => t.id === task.id)); // Ensure temp tasks are included if still present
@@ -454,7 +465,8 @@ const TodoList: React.FC<TodoListProps> = ({ userId, initialEditingTaskId }) => 
                     <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)} aria-label={`Edit task: ${task.text}`} title={`Edit task: ${task.text}`} className="text-muted-foreground hover:text-primary h-8 w-8" disabled={isTemporary}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => navigate('/')} aria-label={`Go to chat regarding task: ${task.text}`} title={`Go to chat regarding task: ${task.text}`} className="text-muted-foreground hover:text-primary h-8 w-8" disabled={isTemporary}>
+                    {/* *** UPDATED: onClick handler and color for chat icon *** */}
+                    <Button variant="ghost" size="icon" onClick={() => handleGoToChat(task)} aria-label={`Go to chat regarding task: ${task.text}`} title={`Go to chat regarding task: ${task.text}`} className="text-orange-500 hover:text-orange-600 h-8 w-8" disabled={isTemporary}>
                       <MessageSquare className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => handleDeleteTask(task.id)} aria-label={`Delete task: ${task.text}`} title={`Delete task: ${task.text}`} className="text-muted-foreground hover:text-destructive h-8 w-8">
