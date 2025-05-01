@@ -99,29 +99,32 @@ const LoginPage: React.FC = () => {
                 disabled={loading} // Disable input while local loading is true
               />
             </div>
-            <div className="relative">
+            {/* Password Input with Visibility Toggle */}
+            <div>
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password} // Value bound to state
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-                aria-required="true"
-                aria-invalid={!!error} // Indicate invalid input on error
-                className="mt-1 pr-10"
-                disabled={loading} // Disable input while local loading is true
-              />
-              <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-0 top-6 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                disabled={loading} // Disable toggle while local loading is true
-              >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
+              <div className="relative mt-1"> {/* Added relative container and mt-1 */}
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password} // Value bound to state
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  aria-required="true"
+                  aria-invalid={!!error} // Indicate invalid input on error
+                  className="pr-10" // Keep padding for the icon button
+                  disabled={loading} // Disable input while local loading is true
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" // Use inset-y-0 and flex items-center
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  disabled={loading} // Disable toggle while local loading is true
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {/* Show local loading state text on button */}

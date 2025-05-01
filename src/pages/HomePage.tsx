@@ -19,7 +19,7 @@ import profileHelpMarkdown from '../../profile_help.md?raw';
 
 const HomePage: React.FC = () => {
   const { user } = useAuth();
-  const { chatId } = useChat();
+  const { chatId } = useChat(); // chatId is still available if needed elsewhere, just not rendered here
   const { activeTasks } = useActiveTasks(user?.id);
   const { isAdmin } = useAdmin();
   const { profile, loading: profileLoading } = useProfile();
@@ -129,7 +129,8 @@ const HomePage: React.FC = () => {
                  >
                     <HelpCircle className="h-5 w-5" />
                  </Button>
-                 <span className="text-xs text-muted-foreground">Chat ID: {chatId.substring(0, 8)}</span>
+                 {/* Removed the Chat ID span element */}
+                 {/* <span className="text-xs text-muted-foreground">Chat ID: {chatId.substring(0, 8)}</span> */}
               </div>
             </div>
             <div className="h-[calc(70vh-48px)]">

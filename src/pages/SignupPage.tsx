@@ -5,7 +5,7 @@ import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
-import { AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, Info, Eye, EyeOff } from 'lucide-react'; // Import Eye and EyeOff icons
 
 // Retrieve the Test Key from environment variables
 const VITE_TEST_KEY = import.meta.env.VITE_TEST_KEY;
@@ -13,6 +13,7 @@ const VITE_TEST_KEY = import.meta.env.VITE_TEST_KEY;
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
   const [nickname, setNickname] = useState('');
   const [testerId, setTesterId] = useState(''); // State for Tester ID
   const [error, setError] = useState<string | null>(null); // Page-specific error state
@@ -74,6 +75,10 @@ const SignupPage: React.FC = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] bg-muted/40 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
@@ -87,7 +92,8 @@ const SignupPage: React.FC = () => {
             <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">Testing Phase Information</p>
-              <p>This is a testing phase of Companira assistant. Only test users are currently allowed to sign-up. If you believe you can bring some valuable insights or ideas (psychologist, patient, developer etc), use the <Link to="/contact" className="font-medium text-primary hover:underline">contact form</Link> and leave us a message.</p>
+              {/* Updated Link to point to About page contact form */}
+              <p>This is a testing phase of Companira assistant. Only test users are currently allowed to sign-up. If you believe you can bring some valuable insights or ideas (psychologist, patient, developer etc), use the <Link to="/about#contact-form" className="font-medium text-primary hover:underline">contact form</Link> and leave us a message.</p>
             </div>
           </div>
 
@@ -113,6 +119,7 @@ const SignupPage: React.FC = () => {
                 required
                 className="mt-1"
                 aria-describedby="testerIdHint" // For accessibility
+                disabled={loading}
               />
                <p id="testerIdHint" className="text-xs text-muted-foreground mt-1">Required for the testing phase.</p>
             </div>
@@ -127,6 +134,7 @@ const SignupPage: React.FC = () => {
                 required
                 className="mt-1"
                 aria-describedby="nicknameHint"
+                disabled={loading}
               />
               <p id="nicknameHint" className="text-xs text-muted-foreground mt-1">This will be your display name.</p>
             </div>
@@ -140,21 +148,35 @@ const SignupPage: React.FC = () => {
                 placeholder="your@email.com"
                 required
                 className="mt-1"
+                disabled={loading}
               />
             </div>
+            {/* Password Input with Visibility Toggle */}
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-                minLength={6} // Keep client-side check
-                className="mt-1"
-                aria-describedby="passwordHint"
-              />
+              <div className="relative mt-1"> {/* Added relative container and mt-1 */}
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'} // Toggle type based on state
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  minLength={6} // Keep client-side check
+                  className="pr-10" // Keep padding for the icon button
+                  aria-describedby="passwordHint"
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" // Use inset-y-0 and flex items-center
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  disabled={loading}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
                <p id="passwordHint" className="text-xs text-muted-foreground mt-1">Must be at least 6 characters long.</p>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
