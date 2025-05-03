@@ -462,9 +462,7 @@ const AnalysisPage: React.FC = () => {
                          <AlertCircle className="h-8 w-8 mb-4" />
                          <p className="font-semibold mb-2">Error Generating Summary</p>
                          <p className="text-sm mb-4">{summaryError}</p>
-                         <Button onClick={handleGenerateSummary} variant="destructive" size="sm">
-                            <RefreshCw className="mr-2 h-4 w-4" /> Try Again
-                         </Button>
+                         {/* Removed the duplicate button here */}
                        </div>
                     )}
                     {!summaryLoading && !dbSummaryLoading && !summaryError && dbSummaryError && !dbSummaryContent && (
@@ -472,10 +470,7 @@ const AnalysisPage: React.FC = () => {
                          <Info className="h-8 w-8 mb-4" />
                          <p className="font-semibold mb-2">No Summary Available</p>
                          <p className="text-sm mb-4">{dbSummaryError}</p>
-                         <Button onClick={handleGenerateSummary} disabled={!user || summaryLoading} variant="default" size="sm">
-                           <RefreshCw className="mr-2 h-4 w-4" />
-                           {user ? 'Generate Weekly Summary' : 'Log in to Generate'}
-                         </Button>
+                         {/* Removed the duplicate button here */}
                        </div>
                     )}
 
@@ -488,6 +483,7 @@ const AnalysisPage: React.FC = () => {
                             {renderMarkdown(currentSummaryText)}
                           </div>
                         ) : (
+                          // Only show placeholder text when no summary and no error
                           !dbSummaryError && (
                             <div className="flex-grow flex flex-col items-center justify-center text-center">
                               <p className="text-muted-foreground mb-4">
@@ -497,7 +493,7 @@ const AnalysisPage: React.FC = () => {
                           )
                         )}
 
-                        {/* Action Button Area */}
+                        {/* Action Button Area - This button remains */}
                         <div className="mt-auto flex justify-end items-center gap-2 pt-4 border-t">
                            {/* Copy Button - Show only if content exists */}
                            {currentSummaryText && (

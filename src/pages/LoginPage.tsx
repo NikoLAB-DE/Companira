@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from 'react'; // Added useEffect for logging
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
-import { AlertCircle, Eye, EyeOff } from 'lucide-react'; // Import icons
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false); // Local loading state for the form button
+  const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
   // --- DEBUG LOGGING ---
-  console.log('[LoginPage Render] State:', { email, password: '***', error, loading });
+  // Log state on every render
+  console.log('[LoginPage Render] Current State:', { email, password: password ? '***' : '', error, loading });
 
   useEffect(() => {
     console.log('[LoginPage Mounted]');
@@ -28,35 +29,39 @@ const LoginPage: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[handleLogin] Start. Clearing previous error.'); // DEBUG
+    console.log('[handleLogin] Start. Clearing previous error.');
     setError(null); // Clear previous errors
-    console.log('[handleLogin] Setting local loading to true.'); // DEBUG
+    console.log('[handleLogin] Setting local loading to true.');
     setLoading(true); // Set local loading true (disables button)
+
     try {
-      console.log('[handleLogin] Calling signIn with:', email); // DEBUG
+      console.log('[handleLogin] Calling signIn with email:', email);
       const response = await signIn(email, password);
-      console.log('[handleLogin] signIn response:', response); // DEBUG
+      console.log('[handleLogin] signIn response received:', response);
 
       if (response.error) {
-        console.log('[handleLogin] signIn returned an error. Throwing it.'); // DEBUG
+        console.log('[handleLogin] signIn returned an error. Throwing it:', response.error);
         // If signIn returns an error, throw it to be caught below
         throw response.error;
       }
-      console.log('[handleLogin] signIn successful. Navigating to /'); // DEBUG
+
+      console.log('[handleLogin] signIn successful. Navigating to /');
       // Successful login: onAuthStateChange in AuthContext will handle user state update.
       navigate('/');
+
     } catch (err: any) {
-      console.error("[handleLogin] CATCH block error:", err); // DEBUG: Log the raw error
+      console.error("[handleLogin] CATCH block entered. Raw error object:", err); // Log the raw error object
       const errorMessage = err?.message || 'Failed to log in. Please check your credentials or try again later.';
-      console.log('[handleLogin] Setting error state to:', errorMessage); // DEBUG
-      // Set the local error state to display the message
-      setError(errorMessage);
-      // Email and password state remain unchanged here, preserving input
-      console.log('[handleLogin] State after setting error:', { email, password: '***', error: errorMessage, loading }); // DEBUG
+      console.log('[handleLogin] Derived error message:', errorMessage);
+      console.log('[handleLogin] Calling setError with:', errorMessage);
+      setError(errorMessage); // Set the local error state to display the message
+      // Email and password state should remain unchanged here, preserving input
+      console.log('[handleLogin] State after calling setError:', { email, password: password ? '***' : '', error: errorMessage, loading });
+
     } finally {
-      console.log('[handleLogin] FINALLY block. Setting local loading to false.'); // DEBUG
-      // Set local loading false (re-enables button)
-      setLoading(false);
+      console.log('[handleLogin] FINALLY block entered. Setting local loading to false.');
+      setLoading(false); // Set local loading false (re-enables button)
+      console.log('[handleLogin] FINALLY block finished.');
     }
   };
 
@@ -102,7 +107,7 @@ const LoginPage: React.FC = () => {
             {/* Password Input with Visibility Toggle */}
             <div>
               <Label htmlFor="password">Password</Label>
-              <div className="relative mt-1"> {/* Added relative container and mt-1 */}
+              <div className="relative mt-1">
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -118,7 +123,7 @@ const LoginPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" // Use inset-y-0 and flex items-center
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   disabled={loading} // Disable toggle while local loading is true
                 >
@@ -134,7 +139,7 @@ const LoginPage: React.FC = () => {
         </CardContent>
         <CardFooter className="flex justify-center text-sm">
           <p>Don't have an account? </p>
-          <Link to="/signup" className="ml-1 font-medium text-primary hover:underline"> {/* Added ml-1 for spacing */}
+          <Link to="/signup" className="ml-1 font-medium text-primary hover:underline">
             Sign up
           </Link>
         </CardFooter>

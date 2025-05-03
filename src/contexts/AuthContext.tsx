@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!isMounted) return; // Don't update if unmounted
 
         // console.log("[AuthContext] onAuthStateChange triggered. Event:", _event);
-        setLoading(true); // Set loading true during state transition
+        // setLoading(true); // <-- REMOVED: Don't hide app during auth state changes triggered by Supabase
         if (session && session.user) {
           // console.log("[AuthContext] Auth state changed: User logged in", session.user.id, "Nickname:", getNickname(session.user));
           setUser({
@@ -107,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         setError(null); // Clear context-level errors on auth change
         // console.log("[AuthContext] onAuthStateChange processing complete. Setting loading to false.");
-        setLoading(false); // <--- Set loading false after processing auth change
+        setLoading(false); // <--- Keep: Set loading false after processing auth change (important for initial load and logout)
       }
     );
 
@@ -187,14 +187,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // --- signIn ---
   const signIn = async (identifier: string, password: string): Promise<AuthResponse> => {
-    // This function *will* manage the global loading state during the attempt
-    setLoading(true); // <--- Set global loading TRUE at the start of the attempt
-    setError(null); // Clear previous context errors
+    // This function *will NOT* manage the global loading state that hides the app.
+    // The calling component (LoginPage) manages its own local loading state.
+    setError(null); // Clear previous context errors (though LoginPage uses its own)
     let response: AuthResponse | null = null; // Define response variable outside try
     try {
       const isEmail = identifier.includes('@'); // Simplified check
       if (!isEmail) {
-         setLoading(false); // <--- Set global loading FALSE before returning early
+         // No global loading change needed here
          return { data: { user: null, session: null }, error: { name: 'SignInInputError', message: 'Please enter a valid email address.' } };
       }
 
@@ -211,16 +211,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             errorMessage = 'Please check your inbox to confirm your email address before logging in.';
         }
         // Return the response containing the potentially modified error
-        // The finally block will handle setLoading(false)
+        // No global loading change needed here
         return {
             ...response,
             error: { ...response.error, message: errorMessage }
         };
       }
 
-      // Successful sign-in. The onAuthStateChange listener will update the user state.
+      // Successful sign-in. The onAuthStateChange listener will update the user state
+      // and set global loading to false.
       // console.log("[AuthContext] Sign in successful for:", response.data.user?.email);
-      // The finally block will handle setLoading(false)
+      // No global loading change needed here
       return response;
 
     } catch (err: any) {
@@ -231,19 +232,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         message: err.message || 'An unexpected network or system error occurred during sign in.',
         status: err.status
       };
-      // The finally block will handle setLoading(false)
+      // No global loading change needed here
       return { data: { user: null, session: null }, error: authError };
     } finally {
-      // CRITICAL: Ensure global loading is set to false regardless of success/error/early return
-      // console.log("[AuthContext] signIn attempt finished. Setting loading to false.");
-      setLoading(false); // <--- Set global loading FALSE in finally block
+      // CRITICAL: Removed setLoading(false) from here.
+      // The calling component (LoginPage) manages its local loading state.
+      // The onAuthStateChange listener will handle the global loading state
+      // change after the user state is updated by Supabase.
+      // console.log("[AuthContext] signIn attempt finished.");
     }
   };
 
   // --- signOut ---
   const signOut = async (): Promise<{ error: AuthError | null }> => {
-    // SignOut also manages global loading state because it triggers onAuthStateChange
-    setLoading(true); // Indicate sign-out process started
+    // SignOut also *will NOT* manage the global loading state that hides the app.
+    // The onAuthStateChange listener will handle the state update and global loading change.
     const userIdToClear = user?.id;
     // console.log(`[AuthContext] Preparing to sign out user: ${userIdToClear}`);
     let result: { error: AuthError | null } = { error: null };
@@ -284,8 +287,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={value}>
-      {/* Render children only when initial loading is complete, OR if a user is already loaded (avoids blank screen during auth state changes) */}
-      {(!loading || user) ? children : <div className="flex items-center justify-center h-screen"><p>Loading Authentication...</p></div> /* Basic centered loading */}
+      {/* Render children only when initial loading is complete */}
+      {loading ? <div className="flex items-center justify-center h-screen"><p>Loading Authentication...</p></div> : children}
     </AuthContext.Provider>
   );
 };
