@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { BarChart, LineChart, PieChart, Activity, Maximize2, Minimize2, Loader2, AlertCircle, RefreshCw, Info, ClipboardCopy, Check } from 'lucide-react'; // Added ClipboardCopy, Check
+import { BarChart, LineChart, PieChart, Activity, Maximize2, Minimize2, Loader2, AlertCircle, RefreshCw, Info, ClipboardCopy, Check, Lock } from 'lucide-react'; // Added Lock icon
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/ProfileContext';
@@ -23,7 +23,8 @@ interface AnalysisCardData {
   icon: React.ElementType;
   iconColor: string;
   contentPlaceholder: string;
-  isNew?: boolean; // Added isNew property
+  isNew?: boolean;
+  disabled?: boolean; // Added disabled property
 }
 
 // Reordered and updated placeholder text
@@ -35,7 +36,7 @@ const analysisCardsData: AnalysisCardData[] = [
   icon: Activity,
   iconColor: 'text-red-600',
   contentPlaceholder: '\n\nOpen this card to explore a thoughtful reflection crafted by your assistant:\n\n ✨ Highlights of your key moments\n 🧠 Hidden patterns and emotional trends\n 🎯 Progress toward your personal goals\n 🌱 A motivating nudge for the new week.\n\nLet’s celebrate your steps forward — even the small ones!',
-  isNew: true, // Mark as New
+  isNew: true,
 },
   {
     id: 'topicAnalysis',
@@ -44,6 +45,7 @@ const analysisCardsData: AnalysisCardData[] = [
     icon: PieChart,
     iconColor: 'text-purple-600',
     contentPlaceholder: 'Topic analysis coming soon',
+    disabled: true, // Disabled
   },
   {
     id: 'progressTrends',
@@ -52,6 +54,7 @@ const analysisCardsData: AnalysisCardData[] = [
     icon: LineChart,
     iconColor: 'text-green-600',
     contentPlaceholder: 'Progress visualization coming soon',
+    disabled: true, // Disabled
   },
   {
     id: 'moodTracking',
@@ -60,6 +63,7 @@ const analysisCardsData: AnalysisCardData[] = [
     icon: BarChart,
     iconColor: 'text-blue-600',
     contentPlaceholder: 'Mood tracking visualization coming soon',
+    disabled: true, // Disabled
   },
 ];
 
@@ -183,14 +187,15 @@ const AnalysisPage: React.FC = () => {
   }, []);
 
 
-  const handleMaximize = useCallback(async (id: string) => {
-    setMaximizedCardId(id);
+  const handleMaximize = useCallback(async (cardData: AnalysisCardData) => {
+    if (cardData.disabled) return; // Prevent maximizing if disabled
+    setMaximizedCardId(cardData.id);
     setDbSummaryContent(null);
     setDbSummaryError(null);
     setDbSummaryLoading(false);
     setIsCopied(false); // Reset copy state
 
-    if (id === 'weeklySummary' && user?.id) {
+    if (cardData.id === 'weeklySummary' && user?.id) {
       setSummaryError(null);
       setSummaryLoading(false);
       setAlreadyExistsMessage(null);
@@ -201,7 +206,7 @@ const AnalysisPage: React.FC = () => {
         setDbSummaryError(error.message || "Failed to get summary thread info.");
         setDbSummaryLoading(false);
       }
-    } else if (id !== 'weeklySummary') {
+    } else if (cardData.id !== 'weeklySummary') {
       setSummaryError(null);
       setSummaryLoading(false);
       setAlreadyExistsMessage(null);
@@ -392,9 +397,10 @@ const AnalysisPage: React.FC = () => {
           const isMaximized = maximizedCardId === cardData.id;
           const isWeeklySummaryCard = cardData.id === 'weeklySummary';
           const currentSummaryText = dbSummaryContent ?? summaryContent; // Determine current text
+          const isCardDisabled = cardData.disabled; // Check if the card is disabled
 
           return (
-            <Card key={cardData.id} className={cn(isMaximized ? 'transition-all duration-300 ease-in-out flex flex-col' : '', 'overflow-hidden')}>
+            <Card key={cardData.id} className={cn(isMaximized ? 'transition-all duration-300 ease-in-out flex flex-col' : '', isCardDisabled && 'opacity-70 cursor-not-allowed', 'overflow-hidden')}>
               <CardHeader className="flex flex-row items-start justify-between flex-shrink-0">
                 <div>
                   <CardTitle className="flex items-center mb-1">
@@ -406,6 +412,12 @@ const AnalysisPage: React.FC = () => {
                         New
                       </span>
                     )}
+                     {/* Add Disabled/WIP Badge */}
+                    {isCardDisabled && (
+                       <span className="ml-2 inline-flex items-center rounded-md bg-yellow-400/10 px-2 py-0.5 text-xs font-medium text-yellow-600 ring-1 ring-inset ring-yellow-500/20 dark:text-yellow-400 dark:ring-yellow-400/30">
+                         WIP
+                       </span>
+                    )}
                   </CardTitle>
                   <CardDescription>
                     {cardData.description}
@@ -414,11 +426,12 @@ const AnalysisPage: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => isMaximized ? handleMinimize() : handleMaximize(cardData.id)}
+                  onClick={() => isMaximized ? handleMinimize() : handleMaximize(cardData)} // Pass cardData to handleMaximize
                   aria-label={isMaximized ? 'Minimize card' : 'Maximize card'}
-                  title={isMaximized ? 'Minimize card' : 'Maximize card'}
+                  title={isMaximized ? 'Minimize card' : (isCardDisabled ? 'Feature under development' : 'Maximize card')}
+                  disabled={isCardDisabled && !isMaximized} // Disable maximize button if card is disabled
                 >
-                  {isMaximized ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+                  {isMaximized ? <Minimize2 className="h-5 w-5" /> : (isCardDisabled ? <Lock className="h-5 w-5 text-gray-400" /> : <Maximize2 className="h-5 w-5" />)}
                 </Button>
               </CardHeader>
               <CardContent className={cn(
@@ -514,11 +527,12 @@ const AnalysisPage: React.FC = () => {
                     )}
                   </div>
                 ) : (
-                  // Placeholder for other cards
-                  <p className="text-gray-500 dark:text-gray-400 text-center whitespace-pre-line">
-                    {cardData.contentPlaceholder}
+                  // Placeholder for other cards (including disabled ones)
+                  <div className={cn("text-gray-500 dark:text-gray-400 text-center whitespace-pre-line flex flex-col items-center justify-center h-full", isCardDisabled && 'cursor-not-allowed')}>
+                    {isCardDisabled && <Lock className="h-8 w-8 mb-2" />} {/* Show lock icon for disabled cards */}
+                    <p>{cardData.contentPlaceholder}</p>
                     {isMaximized && !isWeeklySummaryCard && <span className="block mt-4 text-sm">(Full analysis interface will appear here)</span>}
-                  </p>
+                  </div>
                 )}
               </CardContent>
             </Card>

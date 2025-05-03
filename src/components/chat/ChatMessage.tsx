@@ -71,7 +71,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, userInitial, isLastM
       toast({ title: "Success", description: "Message copied to clipboard!" });
       setTimeout(() => setIsCopied(false), 2000); // Reset icon after 2 seconds
     } catch (err) {
+      // Log the specific error object
       console.error("Failed to copy chat message:", err);
+      // Provide more specific error if possible
       let errorMsg = "Could not copy message to clipboard.";
       if (err instanceof Error) {
         errorMsg += ` Reason: ${err.name} - ${err.message}`;
@@ -152,13 +154,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, userInitial, isLastM
               <Button variant="ghost" className="w-full justify-start px-2 py-1.5 text-sm" onClick={handlePin}>
                 <Pin className="mr-2 h-4 w-4" /> Pin Response
               </Button>
-              {/* Create Task Button */}
-              <Button variant="ghost" className="w-full justify-start px-2 py-1.5 text-sm" onClick={handleCreateTask}>
-                <ListPlus className="mr-2 h-4 w-4" /> Create Task
+              {/* Create Task Button - Disabled */}
+              <Button variant="ghost" className="w-full justify-start px-2 py-1.5 text-sm text-muted-foreground cursor-not-allowed" disabled>
+                <ListPlus className="mr-2 h-4 w-4" /> Create Task (WIP)
               </Button>
-               {/* Export Button */}
-              <Button variant="ghost" className="w-full justify-start px-2 py-1.5 text-sm" onClick={handleExport}>
-                <FileDown className="mr-2 h-4 w-4" /> Export to PDF
+               {/* Export Button - Disabled */}
+              <Button variant="ghost" className="w-full justify-start px-2 py-1.5 text-sm text-muted-foreground cursor-not-allowed" disabled>
+                <FileDown className="mr-2 h-4 w-4" /> Export to PDF (WIP)
               </Button>
             </PopoverContent>
           </Popover>

@@ -5,13 +5,14 @@ import { Button, buttonVariants } from '../components/ui/button'; // Import butt
 import { Link, useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
 import ChatContainer from '../components/chat/ChatContainer';
 import FAQSection from '../components/faq/FAQSection';
-import { MessageSquare, BrainCircuit, ShieldCheck, Users, PlayCircle, HelpCircle, CheckCircle, UserCircle } from 'lucide-react';
+import { MessageSquare, BrainCircuit, ShieldCheck, Users, PlayCircle, HelpCircle, CheckCircle, UserCircle, Pin } from 'lucide-react'; // Import Pin icon
 import { useActiveTasks } from '@/hooks/useActiveTasks';
 import HelpDialog from '@/components/HelpDialog';
 import { useAdmin } from '@/contexts/AdminContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useProfile } from '@/contexts/ProfileContext';
+import { usePinnedItems } from '@/contexts/PinnedItemsContext'; // Import usePinnedItems
 
 // Import the markdown file content as raw strings
 import chatHelpMarkdown from '../../chat_help.md?raw';
@@ -21,6 +22,7 @@ const HomePage: React.FC = () => {
   const { user } = useAuth();
   const { chatId } = useChat(); // chatId is still available if needed elsewhere, just not rendered here
   const { activeTasks } = useActiveTasks(user?.id);
+  const { pinnedItems } = usePinnedItems(); // Get pinned items from context
   const { isAdmin } = useAdmin();
   const { profile, loading: profileLoading } = useProfile();
   const navigate = useNavigate();
@@ -82,9 +84,21 @@ const HomePage: React.FC = () => {
   };
 
   const activeTaskCount = activeTasks.length;
-  const taskMessage = activeTaskCount > 0
-    ? `You have ${activeTaskCount} active task${activeTaskCount > 1 ? 's' : ''}.`
-    : 'You have no active tasks.';
+  const pinnedItemCount = pinnedItems.length;
+
+  // --- Construct Combined Message ---
+  let combinedMessage = '';
+  if (activeTaskCount > 0 && pinnedItemCount > 0) {
+    combinedMessage = `You have ${activeTaskCount} active task${activeTaskCount > 1 ? 's' : ''} and ${pinnedItemCount} pinned conversation${pinnedItemCount > 1 ? 's' : ''}.`;
+  } else if (activeTaskCount > 0) {
+    combinedMessage = `You have ${activeTaskCount} active task${activeTaskCount > 1 ? 's' : ''}.`;
+  } else if (pinnedItemCount > 0) {
+    combinedMessage = `You have ${pinnedItemCount} pinned conversation${pinnedItemCount > 1 ? 's' : ''}.`;
+  } else {
+    combinedMessage = 'You have no active tasks or pinned conversations.';
+  }
+  // --- End Construct Combined Message ---
+
 
   const handlePricingButtonClick = () => {
     navigate('/signup');
@@ -103,7 +117,12 @@ const HomePage: React.FC = () => {
               <p className="text-foreground font-medium">
                 Welcome back, <span className="font-bold">{user.nickname || user.email}</span>! How can I help you today?
                 <span className="block text-sm text-muted-foreground mt-1">
-                  {taskMessage} <Link to="/tools" className="text-primary hover:underline">View tasks</Link>
+                  {/* --- Display Combined Message and Link --- */}
+                  {combinedMessage}{' '} {/* Add a space before the link */}
+                  {(activeTaskCount > 0 || pinnedItemCount > 0) && (
+                    <Link to="/tools" className="text-primary hover:underline">View all</Link>
+                  )}
+                  {/* --- End Display Combined Message and Link --- */}
                 </span>
               </p>
               <div className="flex items-center space-x-2">

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, Loader2, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useChat } from '@/contexts/ChatContext'; // Import useChat hook
 
 interface ContentPanelProps {
   topicId: string | null;
@@ -32,6 +33,7 @@ const ContentPanel: React.FC<ContentPanelProps> = ({ topicId, topicTitle, topicP
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { sendMessage } = useChat(); // Get sendMessage from useChat context
 
   useEffect(() => {
     const fetchTopicContent = async (id: string) => {
@@ -81,17 +83,29 @@ const ContentPanel: React.FC<ContentPanelProps> = ({ topicId, topicTitle, topicP
     if (!topicId || !topicTitle) return;
 
     if (!user) {
+      // If user is not logged in, redirect to signup
       navigate('/signup');
       return;
     }
 
-    // Format the topic path array into a string
+    // Format the topic path array into a string for the prompt
     const formattedPath = topicPath.join(' > ');
+    // Construct the prompt string for the assistant
     const topicPrompt = `Let's talk about: ${formattedPath}`;
 
-    console.log(`Injecting topic path: "${topicPrompt}"`);
-    // Navigate to home page and pass the formatted path string in state
-    navigate('/', { state: { topicPathString: topicPrompt } });
+    console.log(`Injecting topic path into chat: "${topicPrompt}"`);
+
+    // Use sendMessage to send the prompt.
+    // The first argument is the content for the input field (can be empty).
+    // The second argument is the role ('user').
+    // The third argument is the actual message content to send (the topicPrompt).
+    // The fourth argument (true) marks this message as a system prompt.
+    sendMessage('', 'user', topicPrompt, true); // Pass true for isSystemPrompt
+
+    // Navigate to the home page (which contains the chat)
+    navigate('/');
+
+    // Note: We don't need to pass state here anymore, as sendMessage handles the prompt
   };
 
   const buttonText = user

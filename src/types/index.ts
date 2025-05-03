@@ -11,6 +11,7 @@ export interface Message {
   content: string;
   role: 'user' | 'assistant';
   timestamp: string;
+  isSystemPrompt?: boolean; // Added new field
 }
 
 // Updated Profile interface

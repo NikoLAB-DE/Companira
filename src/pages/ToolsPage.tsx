@@ -28,6 +28,7 @@ interface Tool {
   contentPlaceholder: string;
   requiresAuth?: boolean;
   isNew?: boolean; // Added isNew property
+  disabled?: boolean; // Added disabled property
 }
 
 // Reordered toolsData array
@@ -40,7 +41,7 @@ const toolsData: Tool[] = [
     iconColor: 'text-purple-600',
     contentPlaceholder: 'Expand to manage your To-Do list',
     requiresAuth: true,
-    isNew: true, // Mark as New
+    isNew: true,
   },
   {
     id: 'pinned',
@@ -50,6 +51,7 @@ const toolsData: Tool[] = [
     iconColor: 'text-green-600',
     contentPlaceholder: 'Pinned conversations feature coming soon', // This will be replaced by actual content
     requiresAuth: true,
+    isNew: true,
   },
   {
     id: 'findHelp',
@@ -68,6 +70,7 @@ const toolsData: Tool[] = [
     iconColor: 'text-blue-600',
     contentPlaceholder: 'Journaling prompts coming soon',
     requiresAuth: true,
+    disabled: true, // Disabled
   },
 ];
 
@@ -104,11 +107,26 @@ const renderMarkdown = (markdown: string) => {
   return <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizedMarkup }} />;
 };
 
+// Helper function to strip HTML tags from a string
+const stripHtmlTags = (html: string): string => {
+  if (!html) return '';
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  } catch (e) {
+    console.error("Error stripping HTML tags:", e);
+    return html; // Return original string on error
+  }
+};
+
 
 const ToolsPage: React.FC = () => {
   const [maximizedCardId, setMaximizedCardId] = useState<string | null>(null);
   // State to hold the ID of the task to be edited, triggered from summary click
   const [editingTaskIdFromSummary, setEditingTaskIdFromSummary] = useState<string | null>(null);
+  // State to hold the ID of the pinned item to be initially expanded, triggered from summary click
+  const [initialPinnedItemId, setInitialPinnedItemId] = useState<string | null>(null);
+
   const { user } = useAuth();
   // Destructure the refetch function from the hook
   const { activeTasks, refetchActiveTasks } = useActiveTasks(user?.id);
@@ -125,17 +143,27 @@ const ToolsPage: React.FC = () => {
 
 
   // Handle maximizing a card normally (e.g., clicking the maximize icon)
-  const handleMaximize = (id: string, requiresAuth?: boolean) => {
-    if (requiresAuth && !user) {
+  // Added optional initialPinnedItemId parameter
+  const handleMaximize = (tool: Tool, initialPinnedItemId?: string | null) => {
+    if (tool.requiresAuth && !user) {
       return;
     }
-    setMaximizedCardId(id);
-    // Reset editing task ID when maximizing normally
-    setEditingTaskIdFromSummary(null);
+    if (tool.disabled) { // Prevent maximizing if disabled
+      return;
+    }
+    setMaximizedCardId(tool.id);
+    // Reset editing task ID when maximizing normally or for a different card```typescript
+    if (tool.id !== 'todo') {
+      setEditingTaskIdFromSummary(null);
+    }
     // Reset pinned item editing/expansion when maximizing a different card
-    if (id !== 'pinned') {
+    if (tool.id !== 'pinned') {
        setEditingPinnedItemId(null);
        setExpandedPinnedItems(new Set());
+       setInitialPinnedItemId(null); // Also reset initial pinned item ID
+    } else {
+       // If maximizing the pinned card, set the initial pinned item ID if provided
+       setInitialPinnedItemId(initialPinnedItemId || null);
     }
   };
 
@@ -148,6 +176,7 @@ const ToolsPage: React.FC = () => {
     // Reset pinned item editing/expansion when minimizing
     setEditingPinnedItemId(null);
     setExpandedPinnedItems(new Set());
+    setInitialPinnedItemId(null); // Reset initial pinned item ID
 
     // If the 'todo' card was the one being minimized, refetch the tasks
     if (previouslyMaximized === 'todo') {
@@ -161,8 +190,24 @@ const ToolsPage: React.FC = () => {
     if (!user) return; // Should not happen if tasks are shown, but good practice
     console.log("Summary task clicked, setting edit ID:", taskId); // Added log
     setEditingTaskIdFromSummary(taskId); // Set the ID of the task to edit
-    setMaximizedCardId('todo'); // Maximize the ToDo card
+    // Find the todo tool data to pass to handleMaximize
+    const todoTool = toolsData.find(t => t.id === 'todo');
+    if (todoTool) {
+      handleMaximize(todoTool, true); // Maximize the ToDo card
+    }
   };
+
+  // Handle clicking a pinned item in the summary view
+  const handleSummaryPinnedItemClick = (itemId: string) => {
+     if (!user) return; // Should not happen if pinned items are shown, but good practice
+     console.log("Summary pinned item clicked, setting initial expanded ID:", itemId); // Added log
+     // Find the pinned tool data to pass to handleMaximize
+     const pinnedTool = toolsData.find(t => t.id === 'pinned');
+     if (pinnedTool) {
+       handleMaximize(pinnedTool, itemId); // Maximize the Pinned card and pass the item ID
+     }
+  };
+
 
   // Reset editingTaskIdFromSummary when the maximized card changes to something other than 'todo'
   // or when it's minimized completely.
@@ -171,6 +216,18 @@ const ToolsPage: React.FC = () => {
       setEditingTaskIdFromSummary(null);
     }
   }, [maximizedCardId]);
+
+  // Effect to handle initial pinned item expansion when the pinned card is maximized
+  useEffect(() => {
+    if (maximizedCardId === 'pinned' && initialPinnedItemId) {
+      console.log("[ToolsPage] Pinned card maximized with initialPinnedItemId:", initialPinnedItemId); // Debug log
+      // Add the initial pinned item ID to the expanded set
+      setExpandedPinnedItems(prev => new Set(prev).add(initialPinnedItemId));
+      // Optionally, clear initialPinnedItemId after it's used
+      // setInitialPinnedItemId(null); // Decide if you want it to only expand once
+    }
+  }, [maximizedCardId, initialPinnedItemId]);
+
 
   // --- Pinned Items Handlers ---
   const togglePinnedItemExpansion = (id: string) => {
@@ -260,9 +317,10 @@ const ToolsPage: React.FC = () => {
           const isLocked = tool.requiresAuth && !user;
           const isTodoTool = tool.id === 'todo';
           const isPinnedTool = tool.id === 'pinned';
+          const isToolDisabled = tool.disabled; // Check if the tool is disabled
 
           return (
-            <Card key={tool.id} className={isMaximized ? 'transition-all duration-300 ease-in-out' : ''}>
+            <Card key={tool.id} className={cn(isMaximized ? 'transition-all duration-300 ease-in-out' : '', isToolDisabled && 'opacity-70 cursor-not-allowed', 'overflow-hidden')}>
               <CardHeader className="flex flex-row items-start justify-between">
                 <div>
                   <CardTitle className="flex items-center mb-1">
@@ -272,10 +330,15 @@ const ToolsPage: React.FC = () => {
                     {tool.isNew && (
                       <span className="ml-2 inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20">
                         New
-
                       </span>
                     )}
-                    {isLocked && !isMaximized && <Lock className="h-4 w-4 ml-2 text-gray-400" title="Login required" />}
+                    {/* Add Disabled/WIP Badge */}
+                    {isToolDisabled && (
+                       <span className="ml-2 inline-flex items-center rounded-md bg-yellow-400/10 px-2 py-0.5 text-xs font-medium text-yellow-600 ring-1 ring-inset ring-yellow-500/20 dark:text-yellow-400 dark:ring-yellow-400/30">
+                         WIP
+                       </span>
+                    )}
+                    {isLocked && !isMaximized && !isToolDisabled && <Lock className="h-4 w-4 ml-2 text-gray-400" title="Login required" />}
                   </CardTitle>
                   <CardDescription>
                     {tool.description}
@@ -285,22 +348,23 @@ const ToolsPage: React.FC = () => {
                   variant="ghost"
                   size="icon"
                   // Use handleMaximize when clicking the icon, handleMinimize if already maximized
-                  onClick={() => isMaximized ? handleMinimize() : handleMaximize(tool.id, tool.requiresAuth)}
+                  onClick={() => isMaximized ? handleMinimize() : handleMaximize(tool)} // Pass tool data to handleMaximize
                   aria-label={isMaximized ? 'Minimize tool' : 'Maximize tool'}
-                  disabled={isLocked && !isMaximized}
-                  title={isLocked && !isMaximized ? "Login required to use this tool" : (isMaximized ? 'Minimize tool' : 'Maximize tool')}
+                  title={isMaximized ? 'Minimize tool' : (isToolDisabled ? 'Feature under development' : (isLocked ? "Login required to use this tool" : 'Maximize tool'))}
+                  disabled={isLocked || isToolDisabled} // Disable maximize button if locked or disabled
                 >
                   {isMaximized ? (
                     <Minimize2 className="h-5 w-5" />
                   ) : (
-                     isLocked ? <Lock className="h-5 w-5 text-gray-400" /> : <Maximize2 className="h-5 w-5" />
+                     isLocked || isToolDisabled ? <Lock className="h-5 w-5 text-gray-400" /> : <Maximize2 className="h-5 w-5" />
                   )}
                 </Button>
               </CardHeader>
               <CardContent className={cn(
                 "bg-gray-50 dark:bg-slate-900 rounded-b-lg", // Added dark mode background
                 // Ensure minimized view has padding for the button clicks
-                isMaximized ? 'min-h-[60vh] p-0' : 'h-48 p-4 overflow-y-auto'
+                isMaximized ? 'min-h-[60vh] p-0' : 'h-48 p-4 overflow-y-auto',
+                isToolDisabled && !isMaximized && 'flex items-center justify-center' // Center content for disabled minimized cards
               )}>
                 {/* --- Conditional Rendering Logic --- */}
                 {isMaximized ? (
@@ -314,9 +378,14 @@ const ToolsPage: React.FC = () => {
                       {pinnedItems.length > 0 ? (
                         <ul className="space-y-4">
                           {pinnedItems.map(item => {
+                            // Check if this item should be expanded (either initially or via toggle)
                             const isExpanded = expandedPinnedItems.has(item.id);
                             const isEditing = editingPinnedItemId === item.id;
-                            const firstLine = item.content.split('\n')[0];
+                            // Extract the first line from the *original* content (which might be HTML after edit)
+                            const firstLineHtml = item.content.split('\n')[0];
+                            // Strip HTML tags for display in the collapsed view
+                            const firstLineText = stripHtmlTags(firstLineHtml);
+
 
                             return (
                               <li key={item.id} className="p-3 rounded-md bg-background border border-border shadow-sm">
@@ -357,8 +426,8 @@ const ToolsPage: React.FC = () => {
                                           // Render full content as markdown when expanded
                                           renderMarkdown(item.content)
                                         ) : (
-                                          // Show only the first line when collapsed
-                                          <p className="truncate">{firstLine}</p>
+                                          // Show only the first line as plain text when collapsed
+                                          <p className="truncate">{firstLineText}</p>
                                         )}
                                       </button>
                                       {/* Timestamp and Expand/Collapse Icon */}
@@ -377,10 +446,10 @@ const ToolsPage: React.FC = () => {
                                     </div>
                                     {/* Action Buttons */}
                                     <div className="flex flex-row items-center gap-0 flex-shrink-0 ml-1">
-                                      <Button variant="ghost" size="icon" onClick={() => handleEditPinnedItem(item)} aria-label={`Edit pinned item: ${firstLine}`} title={`Edit pinned item: ${firstLine}`} className="text-muted-foreground hover:text-primary h-8 w-8">
+                                      <Button variant="ghost" size="icon" onClick={() => handleEditPinnedItem(item)} aria-label={`Edit pinned item: ${firstLineText}`} title={`Edit pinned item: ${firstLineText}`} className="text-muted-foreground hover:text-primary h-8 w-8">
                                         <Pencil className="h-4 w-4" />
                                       </Button>
-                                      <Button variant="ghost" size="icon" onClick={() => handleDeletePinnedItem(item.id)} aria-label={`Delete pinned item: ${firstLine}`} title={`Delete pinned item: ${firstLine}`} className="text-muted-foreground hover:text-destructive h-8 w-8">
+                                      <Button variant="ghost" size="icon" onClick={() => handleDeletePinnedItem(item.id)} aria-label={`Delete pinned item: ${firstLineText}`} title={`Delete pinned item: ${firstLineText}`} className="text-muted-foreground hover:text-destructive h-8 w-8">
                                         <Trash2 className="h-4 w-4" />
                                       </Button>
                                     </div>
@@ -401,6 +470,12 @@ const ToolsPage: React.FC = () => {
                       <Lock className="h-8 w-8 mx-auto text-gray-400 mb-2" />
                       <p className="text-gray-500 dark:text-gray-400">Please log in to use this tool.</p> {/* Dark mode text */}
                     </div>
+                  ) : isToolDisabled ? ( // Handle disabled maximized state
+                     <div className="text-center p-4 flex flex-col items-center justify-center h-full">
+                       <Lock className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                       <p className="text-gray-500 dark:text-gray-400">This feature is currently under development.</p>
+                       <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">{tool.contentPlaceholder}</p>
+                     </div>
                   ) : (
                     <div className="text-center p-4 flex items-center justify-center h-full">
                       <p className="text-gray-500 dark:text-gray-400">{tool.contentPlaceholder} <span className="block mt-4 text-sm">(Full tool interface will appear here)</span></p> {/* Dark mode text */}
@@ -412,6 +487,11 @@ const ToolsPage: React.FC = () => {
                     <div className="text-center p-4 flex items-center justify-center h-full">
                        <p className="text-gray-500 dark:text-gray-400">Login required to use this tool.</p> {/* Dark mode text */}
                     </div>
+                  ) : isToolDisabled ? ( // Handle disabled minimized state
+                     <div className="text-center p-4 flex flex-col items-center justify-center h-full">
+                       <Lock className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                       <p className="text-gray-500 dark:text-gray-400">Under Development</p>
+                     </div>
                   ) : isTodoTool && user ? (
                      // --- ToDo Summary View (Minimized & Logged In) ---
                      activeTasks.length > 0 ? (
@@ -464,8 +544,41 @@ const ToolsPage: React.FC = () => {
                   ) : isPinnedTool && user ? (
                      // --- Pinned Items Summary View (Minimized & Logged In) ---
                      pinnedItems.length > 0 ? (
-                       <div className="text-center p-4 flex items-center justify-center h-full">
-                         <p className="text-gray-500 dark:text-gray-400">You have {pinnedItems.length} pinned conversation{pinnedItems.length > 1 ? 's' : ''}. Expand to view.</p>
+                       <div className="space-y-2">
+                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pinned Conversations:</p> {/* Added title */}
+                         <ul className="space-y-1.5 text-sm">
+                           {/* Limit to first 4 items for summary view */}
+                           {pinnedItems.slice(0, 4).map(item => {
+                             // Extract the first line for the summary view
+                             const firstLineHtml = item.content.split('\n')[0];
+                             const firstLineText = stripHtmlTags(firstLineHtml);
+
+                             return (
+                               <li key={item.id}>
+                                 <button
+                                    onClick={() => handleSummaryPinnedItemClick(item.id)} // Call handler on click
+                                    className="flex items-center justify-between text-gray-600 dark:text-gray-400 w-full text-left hover:bg-gray-100 dark:hover:bg-slate-800 p-1 rounded transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-blue-300 dark:focus:ring-blue-700" // Dark mode styles
+                                     aria-label={`View pinned item: ${firstLineText}`}
+                                    title={`Click to view: ${firstLineText}`}
+                                  >
+                                   <span className="truncate pr-2 flex-1" title={firstLineText}>{firstLineText}</span>
+                                   <div className="flex items-center space-x-2 flex-shrink-0">
+                                     {/* Display timestamp */}
+                                     <span className="flex items-center text-muted-foreground text-xs" title={`Pinned: ${format(parseISO(item.timestamp), 'MMM d, yyyy HH:mm')}`}>
+                                       <Clock className="h-3 w-3 mr-0.5" />
+                                       {format(parseISO(item.timestamp), 'MMM d')} {/* Display only date in summary */}
+                                     </span>
+                                   </div>
+                                 </button>
+                               </li>
+                             );
+                           })}
+                           {pinnedItems.length > 4 && (
+                              <li className="text-xs text-gray-500 dark:text-gray-400 text-center pt-1">
+                                ...and {pinnedItems.length - 4} more {/* Dark mode text */}
+                              </li>
+                           )}
+                         </ul>
                        </div>
                      ) : (
                        <div className="text-center p-4 flex items-center justify-center h-full">

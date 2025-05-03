@@ -3,19 +3,16 @@ import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { useChat } from '../../contexts/ChatContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useAdmin } from '../../contexts/AdminContext'; // Import useAdmin
-import { Loader2, Info, AlertCircle } from 'lucide-react'; // Added AlertCircle
+import { useAdmin } from '../../contexts/AdminContext';
+import { Loader2, Info, AlertCircle } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { Label } from '../ui/label';
 import { Button } from '../ui/button';
 import { supabase } from '@/lib/supabase';
 
-// Define props interface including the new optional prop
-interface ChatContainerProps {
-  initialTopicPath?: string | null;
-}
+// Removed initialTopicPath prop interface
 
-const ChatContainer: React.FC<ChatContainerProps> = ({ initialTopicPath }) => { // Destructure the prop
+const ChatContainer: React.FC = () => { // Removed prop from component signature
   const {
     messages,
     loading,
@@ -23,10 +20,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ initialTopicPath }) => { 
     useTestWebhook,
     toggleWebhook,
     lastSentPayload,
-    threadLoadingError // Get thread loading error from context
+    threadLoadingError
   } = useChat();
   const { user } = useAuth();
-  const { isAdmin } = useAdmin(); // Get admin state
+  const { isAdmin } = useAdmin();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // New state for thread IDs and loading (for admin debug)
@@ -48,10 +45,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ initialTopicPath }) => { 
         // Double check messages length after timeout
         if (messages.length === 0) {
            const welcomeText = `Hi there! Enjoy our journey.`;
-           // Use silentInject: true so the greeting itself isn't sent to the webhook
-           // and doesn't appear as a user message in the UI.
-           // The assistant role ensures it looks like an AI message.
-           sendMessage('', 'assistant', welcomeText,true);
+           // Use initialContent to send the greeting without needing user input
+           sendMessage('', 'assistant', welcomeText); // Removed silentInject
         }
       }, 500); // Adjust delay as needed
 
@@ -195,8 +190,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ initialTopicPath }) => { 
 
       {/* Chat Input Area */}
       <div className="flex-shrink-0 p-2 border-t bg-background">
-        {/* Pass the initialTopicPath down to ChatInput */}
-        <ChatInput initialTopicPath={initialTopicPath} />
+        {/* Removed initialTopicPath prop */}
+        <ChatInput />
       </div>
     </div>
   );

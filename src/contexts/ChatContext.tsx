@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import { Message } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from './AuthContext';
-import { supabase, fetchThreadIdByTitle } from '../lib/supabase'; // Import fetchThreadIdByTitle
+import { supabase, fetchThreadIdByTitle } from '../lib/supabase';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 // --- Constants ---
@@ -13,14 +13,13 @@ const TEST_WEBHOOK_URL = 'https://flow.lazy-bees.com/webhook-test/test';
 interface ChatContextType {
   messages: Message[];
   loading: boolean;
-  sendMessage: (content: string, role?: 'user' | 'assistant', initialContent?: string, silentInject?: boolean) => void;
+  sendMessage: (content: string, role?: 'user' | 'assistant', initialContent?: string, isSystemPrompt?: boolean) => void; // Added isSystemPrompt
   clearMessages: () => void;
   chatId: string; // Unique ID for the current chat session instance (still useful for UI session)
   useTestWebhook: boolean;
   toggleWebhook: () => void;
   lastSentPayload: Record<string, any> | null; // For debugging
   clearLastSentPayload: () => void; // For debugging
-  sendSilentMessage: (content: string) => Promise<void>; // Send without UI update
   threadLoadingError: string | null; // Expose thread loading errors
 }
 
@@ -72,9 +71,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const { data, error } = await supabase
         .from('chat_messages')
-        .select('id, role, message, created_at') // *** MODIFIED: Select 'message' instead of 'content' ***
+        .select('id, role, message, created_at, is_system_prompt') // Select the new column
         .eq('user_id', userId)
         .eq('thread_id', threadId)
+        .eq('is_system_prompt', false) // *** Filter out system prompts ***
         .gte('created_at', todayISO) // Greater than or equal to start of today
         .lt('created_at', tomorrowISO) // Less than start of tomorrow
         .order('created_at', { ascending: true }); // Oldest first
@@ -85,9 +85,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (data) {
         const fetchedMessages: Message[] = data.map(msg => ({
           id: msg.id,
-          content: msg.message, // *** MODIFIED: Map 'message' from DB to 'content' in state ***
+          content: msg.message, // Map 'message' from DB to 'content' in state
           role: msg.role as 'user' | 'assistant', // Cast role
           timestamp: msg.created_at,
+          isSystemPrompt: msg.is_system_prompt, // Include the new field
         }));
         setMessages(fetchedMessages);
       } else {
@@ -99,7 +100,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setLoading(false); // Set loading false after fetch completes
     }
-  }, []); // No dependencies needed inside useCallback
+  }, []);
 
   // --- Effect: Fetch Thread ID and Messages when User Changes ---
   useEffect(() => {
@@ -151,7 +152,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         (payload) => {
           const newMessage = payload.new as any; // Use 'any' temporarily for flexible access
-          const messageContent = newMessage.content || newMessage.message; // *** MODIFIED: Handle both 'content' and 'message' from real-time payload ***
+          const messageContent = newMessage.content || newMessage.message; // Handle both 'content' and 'message' from real-time payload
+
+          // *** Filter out system prompts from real-time updates ***
+          if (newMessage.is_system_prompt) {
+             console.log('[ChatContext] Received system prompt via real-time, skipping display.');
+             return;
+          }
 
           if (!messageContent) {
              console.warn('[ChatContext] Real-time payload missing content/message field:', payload.new);
@@ -163,6 +170,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
              content: messageContent,
              role: newMessage.role as 'user' | 'assistant',
              timestamp: newMessage.created_at,
+             isSystemPrompt: newMessage.is_system_prompt, // Include the new field
           };
 
           // Add the new message to the state if it's not already there (basic deduplication)
@@ -305,7 +313,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     content: string,
     role: 'user' | 'assistant' = 'user',
     initialContent?: string, // Optional initial content (e.g., from button click)
-    silentInject: boolean = false // If true, don't add user message to UI, just send to webhook
+    isSystemPrompt: boolean = false // Added new parameter with default false
   ) => {
     const messageContent = initialContent || content; // Use initialContent if provided, else use content
     if (!messageContent || messageContent.trim() === '') {
@@ -315,47 +323,55 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // --- Handle User Messages ---
     if (role === 'user' && !loading) {
-      // Add user message to UI immediately unless it's a silent injection
-      if (!silentInject) {
+      // Add user message to UI immediately ONLY if it's NOT a system prompt
+      if (!isSystemPrompt) {
         const newUserMessage: Message = {
           id: uuidv4(), // Use UUID for optimistic UI update
           content: messageContent, // Use the final content to display
           role: 'user',
-          timestamp: new Date().toISOString() // Use current time for optimistic UI
+          timestamp: new Date().toISOString(), // Use current time for optimistic UI
+          isSystemPrompt: isSystemPrompt, // Include the flag
         };
         setMessages(prev => [...prev, newUserMessage]);
-
-        // Save user message to Supabase
-        if (user?.id && mainThreadId) {
-          try {
-            const { error } = await supabase
-              .from('chat_messages')
-              .insert({
-                id: newUserMessage.id, // Use the same UUID
-                thread_id: mainThreadId,
-                user_id: user.id,
-                content: newUserMessage.content, // *** MODIFIED: Use 'content' here as per the migration/schema I intended ***
-                role: newUserMessage.role,
-                created_at: newUserMessage.timestamp, // Use the same timestamp
-              })
-              .select() // Select the inserted data to confirm
-              .single();
-
-            if (error) {
-              console.error('[ChatContext:sendMessage] Supabase error saving user message:', error);
-            }
-          } catch (dbErr) {
-            console.error('[ChatContext:sendMessage] Unexpected error saving user message to Supabase:', dbErr);
-          }
-        } else {
-           console.warn('[ChatContext:sendMessage] Skipping saving user message to Supabase: user or mainThreadId missing.');
-        }
       }
 
-      setLoading(true);
+
+      // Save user message to Supabase
+      if (user?.id && mainThreadId) {
+        try {
+          const { error } = await supabase
+            .from('chat_messages')
+            .insert({
+              id: uuidv4(), // Generate a new UUID for the DB entry
+              thread_id: mainThreadId,
+              user_id: user.id,
+              content: messageContent, // Save the actual content
+              role: 'user', // Always save as 'user' role from the user's perspective
+              created_at: new Date().toISOString(),
+              is_system_prompt: isSystemPrompt, // *** Save the flag to DB ***
+            })
+            .select() // Select the inserted data to confirm
+            .single();
+
+          if (error) {
+            console.error('[ChatContext:sendMessage] Supabase error saving user message:', error);
+          }
+        } catch (dbErr) {
+          console.error('[ChatContext:sendMessage] Unexpected error saving user message to Supabase:', dbErr);
+        }
+      } else {
+         console.warn('[ChatContext:sendMessage] Skipping saving user message to Supabase: user or mainThreadId missing.');
+      }
+
+      // Set loading true only if it's a user-initiated message (not a silent system prompt)
+      // This ensures the loading indicator shows for the webhook call.
+      if (!isSystemPrompt) {
+         setLoading(true);
+      }
+
 
       try {
-        // Call the webhook logic
+        // Call the webhook logic with the actual message content
         const responseContent = await sendToWebhook(messageContent);
 
         // Create the assistant's response message
@@ -363,10 +379,14 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: uuidv4(), // Use UUID for the assistant message
           content: responseContent,
           role: 'assistant',
-          timestamp: new Date().toISOString() // Use current time
+          timestamp: new Date().toISOString(),
+          isSystemPrompt: false, // Assistant responses are never system prompts
         };
 
         // Add the assistant's response message to UI
+        // Note: Real-time subscription will also add this if it's saved to DB,
+        // but adding it optimistically here provides a faster UI update.
+        // Deduplication in the real-time handler prevents duplicates.
         setMessages(prev => [...prev, aiMessage]);
 
         // Save assistant message to Supabase
@@ -378,9 +398,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
                  id: aiMessage.id,
                  thread_id: mainThreadId,
                  user_id: user.id, // Associate assistant message with the user who received it
-                 content: aiMessage.content, // *** MODIFIED: Use 'content' here as per the migration/schema I intended ***
+                 content: aiMessage.content,
                  role: aiMessage.role,
                  created_at: aiMessage.timestamp,
+                 is_system_prompt: false, // Assistant responses are never system prompts
                })
                .select()
                .single();
@@ -401,11 +422,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: uuidv4(),
           content: "Oops! Something unexpected went wrong while processing the response.",
           role: 'assistant',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          isSystemPrompt: false, // Error messages are not system prompts
         };
         setMessages(prev => [...prev, errorMessage]);
       } finally {
-        setLoading(false); // Ensure loading is always set to false
+        // Set loading false only if it was set to true (i.e., not a silent system prompt)
+        if (!isSystemPrompt) {
+           setLoading(false); // Ensure loading is always set to false
+        }
       }
     }
     // --- Handle Direct Assistant Messages (e.g., initial greeting) ---
@@ -414,49 +439,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: uuidv4(),
         content: messageContent,
         role: 'assistant',
-        timestamp: new Date().toISOString() // *** FIXED THE TYPO HERE ***
+        timestamp: new Date().toISOString(),
+        isSystemPrompt: false, // Direct assistant messages are not system prompts
       };
       setMessages(prev => [...prev, newAssistantMessage]);
       // Note: Direct assistant messages added this way are NOT saved to the DB.
+      // If you need them saved, you'd add similar Supabase insert logic here,
+      // ensuring is_system_prompt is false.
     }
-  }, [loading, user?.id, mainThreadId, threadLoadingError, useTestWebhook, fetchAndSetMainThreadId, sendToWebhook]); // Added sendToWebhook dependency
-
-
-  // --- Send Silent Message (No UI Update) ---
-  const sendSilentMessage = useCallback(async (content: string) => {
-    if (!content || content.trim() === '') {
-      console.warn('[ChatContext:sendSilentMessage] Called with empty content.');
-      return;
-    }
-    if (!user?.id) {
-      console.warn('[ChatContext:sendSilentMessage] Not sent: User not logged in.');
-      return;
-    }
-     if (threadLoadingError) {
-      console.warn(`[ChatContext:sendSilentMessage] Not sent: Thread loading error: ${threadLoadingError}`);
-      return;
-    }
-    let currentMainThreadId = mainThreadId;
-    if (!currentMainThreadId) {
-       console.warn('[ChatContext:sendSilentMessage] mainThreadId is null. Attempting refetch...');
-       await fetchAndSetMainThreadId(user.id);
-       currentMainThreadId = mainThreadId; // Re-read state
-       if (!currentMainThreadId) {
-          console.warn('[ChatContext:sendSilentMessage] Not sent: mainThreadId still null after refetch.');
-          return;
-       }
-    }
-
-    try {
-      // Directly call sendToWebhook, bypassing UI updates and loading state changes
-      const response = await sendToWebhook(content);
-      // Log the response for debugging, but don't add it to messages state
-      // Note: Silent messages and their responses are NOT saved to the DB by this function.
-    } catch (error) {
-      // Log errors encountered during the silent send
-      console.error('[ChatContext:sendSilentMessage] Error sending silent message:', error);
-    }
-  }, [user?.id, mainThreadId, threadLoadingError, fetchAndSetMainThreadId, sendToWebhook]); // Added dependencies
+  }, [loading, user?.id, mainThreadId, threadLoadingError, useTestWebhook, fetchAndSetMainThreadId, sendToWebhook]);
 
 
   // --- Clear Messages ---
@@ -479,7 +470,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toggleWebhook,
     lastSentPayload,
     clearLastSentPayload,
-    sendSilentMessage,
     threadLoadingError // Expose error state
   };
 

@@ -5,15 +5,14 @@ import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-// Removed CalendarIcon import
 import { Trash2, Plus, Pencil, Save, XCircle, Clock, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '../ui/card';
-// Removed Popover imports
 import { format, parseISO, compareDesc, isValid, parse } from 'date-fns';
 import { cn } from "@/lib/utils";
 import { Task } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { useToast } from "@/components/ui/use-toast";
+import { useChat } from '@/contexts/ChatContext'; // Import useChat
 
 type FilterStatus = 'active' | 'finished' | 'all';
 
@@ -65,6 +64,7 @@ const formatTimeForSupabase = (time: string | undefined): string | null => {
 const TodoList: React.FC<TodoListProps> = ({ userId, initialEditingTaskId }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { sendMessage } = useChat(); // Get sendMessage from context
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTaskText, setNewTaskText] = useState('');
@@ -87,7 +87,7 @@ const TodoList: React.FC<TodoListProps> = ({ userId, initialEditingTaskId }) => 
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabase // Corrected: Removed duplicate 'const'
         .from('To_Do')
         .select('*')
         .eq('user_id', userId)
@@ -298,15 +298,26 @@ const TodoList: React.FC<TodoListProps> = ({ userId, initialEditingTaskId }) => 
     }
   }, [editingTaskId, editText, editDueDate, editFixDate, editDueTime, editFixTime, editComment, userId, tasks, toast, handleCancelEdit]);
 
-  // *** Handler for the chat icon click ***
-  const handleGoToChat = useCallback((task: Task) => {
-    let promptString = `Let's talk about my task and search the internet: "${task.text}".`;
+  // *** MODIFIED: Handler for the chat icon click ***
+  const handleGoToChat = useCallback(async (task: Task) => {
+    let promptString = `User wants to find a solution for his task: "${task.text}". Search the internet for suitable details and links. Interview user and gather all necessary information to deliver a highly personalized and accurate response. Your job is to ask a sequence of thoughtful, dynamic questions-one at a time-in response to the user's initial input, and adapt your questions based on the user's answers. Start by asking a clarifying or foundational question that helps better understand the user's goal or context. Do not proceed to provide a final answer until all essential details have been uncovered through this iterative questioning process. Use the following as your starting input: User Objective or Question: "${task.text}", Guidelines: Ask only one question at a time Adjust follow-up questions based on the user's previous response Keep questions focused, relevant, and progression-oriented When you believe you have enough information, confirm with the user before generating the final response If anything is unclear or you need additional details to improve your response, please ask for clarification.`;
     if (task.comment && task.comment.trim() !== '') {
-      promptString += ` Comment: "${task.comment.trim()}"`;
+      promptString += `  Additional Instructions (optional): "${task.comment.trim()}"`;
     }
-    console.log(`Navigating to chat with prompt: "${promptString}"`);
-    navigate('/', { state: { topicPathString: promptString } });
-  }, [navigate]);
+    console.log(`Sending task details to chat: "${promptString}"`);
+
+    // Use sendMessage to send the prompt.
+    // The first argument is the content for the input field (can be empty).
+    // The second argument is the role ('user').
+    // The third argument is the actual message content to send (the promptString).
+    // The fourth argument (true) marks this message as a system prompt.
+    sendMessage('', 'user', promptString, true); // Pass true for isSystemPrompt
+
+    // Navigate to the chat page
+    navigate('/');
+
+    // Removed the toast message here, as the chat UI will show the message and loading state
+  }, [sendMessage, navigate]); // Added sendMessage and navigate to dependencies
 
 
   const groupedAndSortedTasks = useMemo(() => {
@@ -465,7 +476,7 @@ const TodoList: React.FC<TodoListProps> = ({ userId, initialEditingTaskId }) => 
                     <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)} aria-label={`Edit task: ${task.text}`} title={`Edit task: ${task.text}`} className="text-muted-foreground hover:text-primary h-8 w-8" disabled={isTemporary}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    {/* *** UPDATED: onClick handler and color for chat icon *** */}
+                    {/* *** MODIFIED: onClick handler calls handleGoToChat directly *** */}
                     <Button variant="ghost" size="icon" onClick={() => handleGoToChat(task)} aria-label={`Go to chat regarding task: ${task.text}`} title={`Go to chat regarding task: ${task.text}`} className="text-orange-500 hover:text-orange-600 h-8 w-8" disabled={isTemporary}>
                       <MessageSquare className="h-4 w-4" />
                     </Button>
